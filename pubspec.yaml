@@ -51,6 +51,7 @@ dependencies:
   open_filex: ^4.7.0
   pdfx: ^2.9.2
   http: ^1.4.0
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

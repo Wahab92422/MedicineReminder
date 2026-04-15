@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../screens/appointments_screen.dart';
+import '../screens/clinical_notes_history_screen.dart';
+import '../screens/family_history_screen.dart';
+import '../screens/medical_history_screen.dart';
 import '../screens/history_screen.dart';
 import '../screens/lab_history_screen.dart';
 import '../screens/medicine_scheduling_screen.dart';
-import '../screens/quick_action_placeholder_screen.dart';
+import '../screens/meals_history_screen.dart';
+import '../screens/surgical_history_screen.dart';
 import '../screens/vitals_list_screen.dart';
 import '../theme/app_spacing.dart';
 import 'section_header.dart';
@@ -68,10 +73,7 @@ class DashboardQuickActions extends ConsumerWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder: (_) => const QuickActionPlaceholderScreen(
-              title: 'Meals',
-              icon: Icons.restaurant_rounded,
-            ),
+            builder: (_) => const MealsHistoryScreen(),
           ),
         );
       },
@@ -83,10 +85,7 @@ class DashboardQuickActions extends ConsumerWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder: (_) => const QuickActionPlaceholderScreen(
-              title: 'Clinical Notes',
-              icon: Icons.note_alt_outlined,
-            ),
+            builder: (_) => const ClinicalNotesHistoryScreen(),
           ),
         );
       },
@@ -98,10 +97,7 @@ class DashboardQuickActions extends ConsumerWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder: (_) => const QuickActionPlaceholderScreen(
-              title: 'Appointments',
-              icon: Icons.event_available_outlined,
-            ),
+            builder: (_) => const AppointmentsScreen(),
           ),
         );
       },
@@ -125,10 +121,7 @@ class DashboardQuickActions extends ConsumerWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder: (_) => const QuickActionPlaceholderScreen(
-              title: 'Medical History',
-              icon: Icons.history_edu_outlined,
-            ),
+            builder: (_) => const MedicalHistoryScreen(),
           ),
         );
       },
@@ -140,10 +133,7 @@ class DashboardQuickActions extends ConsumerWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder: (_) => const QuickActionPlaceholderScreen(
-              title: 'Surgical History',
-              icon: Icons.local_hospital_outlined,
-            ),
+            builder: (_) => const SurgicalHistoryScreen(),
           ),
         );
       },
@@ -155,10 +145,7 @@ class DashboardQuickActions extends ConsumerWidget {
         Navigator.push<void>(
           context,
           MaterialPageRoute<void>(
-            builder: (_) => const QuickActionPlaceholderScreen(
-              title: 'Family History',
-              icon: Icons.groups_outlined,
-            ),
+            builder: (_) => const FamilyHistoryScreen(),
           ),
         );
       },
