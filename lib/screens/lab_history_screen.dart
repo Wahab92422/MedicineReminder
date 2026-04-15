@@ -49,7 +49,9 @@ Future<bool> confirmLabDelete(BuildContext context) async {
     context: context,
     builder: (ctx) => AlertDialog(
       title: const Text('Delete lab report?'),
-      content: const Text('The file will be removed from storage and this list.'),
+      content: const Text(
+        'The file will be removed from storage and this list.',
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(ctx, false),
@@ -77,10 +79,7 @@ Future<void> openLabReportFile(BuildContext context, LabReport report) async {
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => _LabPdfViewerPage(
-          url: url,
-          title: report.reportName,
-        ),
+        builder: (_) => _LabPdfViewerPage(url: url, title: report.reportName),
       ),
     );
     return;
@@ -97,10 +96,7 @@ Future<void> openLabReportFile(BuildContext context, LabReport report) async {
     await Navigator.push<void>(
       context,
       MaterialPageRoute<void>(
-        builder: (_) => _LabImageViewerPage(
-          url: url,
-          title: report.reportName,
-        ),
+        builder: (_) => _LabImageViewerPage(url: url, title: report.reportName),
       ),
     );
     return;
@@ -126,9 +122,9 @@ Future<void> openLabReportFile(BuildContext context, LabReport report) async {
     await OpenFilex.open(file.path);
   } catch (e) {
     if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Could not open file: $e')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Could not open file: $e')));
     }
   }
 }
@@ -150,9 +146,7 @@ class _LabPdfViewerPageState extends State<_LabPdfViewerPage> {
   void initState() {
     super.initState();
     _controller = PdfControllerPinch(
-      document: PdfDocument.openData(
-        http.readBytes(Uri.parse(widget.url)),
-      ),
+      document: PdfDocument.openData(http.readBytes(Uri.parse(widget.url))),
     );
   }
 
@@ -219,9 +213,7 @@ class LabHistoryScreen extends ConsumerWidget {
     final async = ref.watch(labReportsStreamProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Lab reports'),
-      ),
+      appBar: AppBar(title: const Text('Lab reports')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push<void>(
@@ -238,14 +230,8 @@ class LabHistoryScreen extends ConsumerWidget {
             return EmptyState(
               icon: Icons.science_outlined,
               title: 'No lab reports',
-              subtitle: 'Upload any file type — PDF, images, Office, DICOM, zip, and more.',
-              actionLabel: 'Add report',
-              onAction: () {
-                Navigator.push<void>(
-                  context,
-                  MaterialPageRoute<void>(builder: (_) => const AddLabScreen()),
-                );
-              },
+              subtitle:
+                  'Upload any file type — PDF, images, Office, DICOM, zip, and more.',
             );
           }
           return ListView.builder(
@@ -284,7 +270,8 @@ class LabHistoryScreen extends ConsumerWidget {
                       );
                     },
                     onDeletePressed: () async {
-                      if (!await confirmLabDelete(context) || !context.mounted) {
+                      if (!await confirmLabDelete(context) ||
+                          !context.mounted) {
                         return;
                       }
                       await doDelete();
@@ -353,7 +340,9 @@ class _LabReportCard extends StatelessWidget {
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-            side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.5)),
+            side: BorderSide(
+              color: scheme.outlineVariant.withValues(alpha: 0.5),
+            ),
           ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
@@ -370,7 +359,11 @@ class _LabReportCard extends StatelessWidget {
                       color: badgeColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                     ),
-                    child: Icon(labFileIcon(badge), color: badgeColor, size: 28),
+                    child: Icon(
+                      labFileIcon(badge),
+                      color: badgeColor,
+                      size: 28,
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
@@ -379,16 +372,14 @@ class _LabReportCard extends StatelessWidget {
                       children: [
                         Text(
                           report.reportName,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w800,
-                              ),
+                          style: Theme.of(context).textTheme.titleMedium
+                              ?.copyWith(fontWeight: FontWeight.w800),
                         ),
                         const SizedBox(height: AppSpacing.xs),
                         Text(
                           report.testName,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: scheme.onSurfaceVariant,
-                              ),
+                          style: Theme.of(context).textTheme.bodyMedium
+                              ?.copyWith(color: scheme.onSurfaceVariant),
                         ),
                         const SizedBox(height: AppSpacing.sm),
                         Wrap(
@@ -404,11 +395,15 @@ class _LabReportCard extends StatelessWidget {
                                 color: scheme.primary,
                               ),
                               label: Text(report.reportType),
-                              labelStyle: Theme.of(context).textTheme.labelMedium,
+                              labelStyle: Theme.of(
+                                context,
+                              ).textTheme.labelMedium,
                             ),
                             Chip(
                               visualDensity: VisualDensity.compact,
-                              backgroundColor: badgeColor.withValues(alpha: 0.12),
+                              backgroundColor: badgeColor.withValues(
+                                alpha: 0.12,
+                              ),
                               label: Text(
                                 labFileBadgeLabel(badge),
                                 style: TextStyle(
@@ -420,19 +415,18 @@ class _LabReportCard extends StatelessWidget {
                             ),
                             Text(
                               '.${report.fileExtension}',
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: scheme.onSurfaceVariant,
-                                  ),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
                             ),
                             Text(
                               formatLabFileSize(report.fileSize),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: scheme.onSurfaceVariant,
-                                  ),
+                              style: Theme.of(context).textTheme.labelSmall
+                                  ?.copyWith(color: scheme.onSurfaceVariant),
                             ),
                           ],
                         ),
-                        if (report.testDate != null || report.resultDate != null) ...[
+                        if (report.testDate != null ||
+                            report.resultDate != null) ...[
                           const SizedBox(height: AppSpacing.sm),
                           Text(
                             [
@@ -441,9 +435,8 @@ class _LabReportCard extends StatelessWidget {
                               if (report.resultDate != null)
                                 'Result: ${report.resultDate!.year}-${report.resultDate!.month.toString().padLeft(2, '0')}-${report.resultDate!.day.toString().padLeft(2, '0')}',
                             ].join(' · '),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: scheme.onSurfaceVariant,
-                                ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: scheme.onSurfaceVariant),
                           ),
                         ],
                       ],
@@ -459,7 +452,10 @@ class _LabReportCard extends StatelessWidget {
                       IconButton(
                         tooltip: 'Delete',
                         onPressed: () => onDeletePressed(),
-                        icon: Icon(Icons.delete_outline_rounded, color: scheme.error),
+                        icon: Icon(
+                          Icons.delete_outline_rounded,
+                          color: scheme.error,
+                        ),
                       ),
                     ],
                   ),
