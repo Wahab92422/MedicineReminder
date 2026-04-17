@@ -72,13 +72,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   children: [
                     const SizedBox(height: AppSpacing.md),
                     Icon(
-                      Icons.medication_liquid_rounded,
+                      Icons.local_hospital_rounded,
                       size: 56,
                       color: scheme.primary,
                     ),
                     const SizedBox(height: AppSpacing.md),
                     Text(
-                      'Medicine Reminder',
+                      'Medicine App',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.bold,
@@ -86,7 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'Stay on track with doses and reminders',
+                      'Sign in to continue. Rebuild features from this base.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: scheme.onSurfaceVariant,

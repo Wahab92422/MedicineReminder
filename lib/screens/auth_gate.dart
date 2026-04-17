@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
+import 'dashboard_screen.dart';
 import 'login_screen.dart';
-import 'shell/main_shell.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -19,7 +19,7 @@ class AuthGate extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Icon(
-                    Icons.medication_liquid_rounded,
+                    Icons.local_hospital_rounded,
                     size: 48,
                     color: Theme.of(context).colorScheme.primary,
                   ),
@@ -32,7 +32,7 @@ class AuthGate extends StatelessWidget {
         }
 
         if (snapshot.hasData) {
-          return const MainShell();
+          return const DashboardScreen();
         }
 
         return const LoginScreen();
