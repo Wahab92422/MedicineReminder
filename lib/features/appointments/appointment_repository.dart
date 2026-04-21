@@ -1,19 +1,18 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:path/path.dart' as p;
 
-import '../../services/meal_reminder_notification_helper.dart';
-import 'meal_entry.dart';
+import '../../services/appointment_notification_helper.dart';
+import 'appointment_entry.dart';
 
-class MealWriteResponse {
-  const MealWriteResponse.success(this.entryId, {this.isQueuedForSync = false})
-    : success = true,
-      errorMessage = null;
+class AppointmentWriteResponse {
+  const AppointmentWriteResponse.success(
+    this.entryId, {
+    this.isQueuedForSync = false,
+  }) : success = true,
+       errorMessage = null;
 
-  const MealWriteResponse.failure(this.entryId, this.errorMessage)
+  const AppointmentWriteResponse.failure(this.entryId, this.errorMessage)
     : success = false,
       isQueuedForSync = false;
 
@@ -23,32 +22,34 @@ class MealWriteResponse {
   final bool isQueuedForSync;
 }
 
-class MealPage {
-  const MealPage({required this.items, this.nextPageCursor});
+class AppointmentPage {
+  const AppointmentPage({required this.items, this.nextPageCursor});
 
-  final List<MealEntry> items;
+  final List<AppointmentEntry> items;
   final DocumentSnapshot<Map<String, dynamic>>? nextPageCursor;
 }
 
-class MealRepository {
-  MealRepository({FirebaseFirestore? firestore, FirebaseStorage? storage})
-    : _firestore = firestore ?? FirebaseFirestore.instance,
-      _storage = storage ?? FirebaseStorage.instance;
+class AppointmentRepository {
+  AppointmentRepository({FirebaseFirestore? firestore})
+    : _firestore = firestore ?? FirebaseFirestore.instance;
 
   final FirebaseFirestore _firestore;
-  final FirebaseStorage _storage;
 
   static const Duration _writeTimeout = Duration(seconds: 20);
   static const Duration _verifyTimeout = Duration(seconds: 5);
   static const Duration _readTimeout = Duration(seconds: 20);
 
-  CollectionReference<Map<String, dynamic>> _meals(String userId) {
-    return _firestore.collection('users').doc(userId).collection('meals');
+  CollectionReference<Map<String, dynamic>> _appointments(String userId) {
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('appointments');
   }
 
-  String allocateMealId(String userId) => _meals(userId).doc().id;
+  String allocateAppointmentId(String userId) =>
+      _appointments(userId).doc().id;
 
-  Future<MealPage> getMealsPage({
+  Future<AppointmentPage> getAppointmentsPage({
     required String userId,
     int limit = 20,
     Object? pageCursor,
@@ -57,9 +58,9 @@ class MealRepository {
         ? pageCursor
         : null;
 
-    Query<Map<String, dynamic>> q = _meals(
+    Query<Map<String, dynamic>> q = _appointments(
       userId,
-    ).orderBy('mealAt', descending: true);
+    ).orderBy('scheduledAt', descending: true);
 
     if (startAfter != null) {
       q = q.startAfterDocument(startAfter);
@@ -67,44 +68,50 @@ class MealRepository {
 
     final snap = await q.limit(limit).get().timeout(_readTimeout);
     final docs = snap.docs;
-    final items = docs.map(MealEntry.fromFirestore).toList();
+    final items = docs.map(AppointmentEntry.fromFirestore).toList();
     final lastDoc = docs.isEmpty ? null : docs.last;
     final hasMore = docs.length == limit;
 
-    return MealPage(items: items, nextPageCursor: hasMore ? lastDoc : null);
+    return AppointmentPage(
+      items: items,
+      nextPageCursor: hasMore ? lastDoc : null,
+    );
   }
 
-  Future<MealWriteResponse> createEntry({
+  Future<AppointmentWriteResponse> createEntry({
     required String userId,
-    required MealEntry entry,
+    required AppointmentEntry entry,
   }) async {
     final payload = entry.toCreateMapClientTs(DateTime.now());
     final res = await _runWrite(
       entryId: entry.id,
       action: 'create',
       operation: () async {
-        await _meals(userId).doc(entry.id).set(payload).timeout(_writeTimeout);
+        await _appointments(userId)
+            .doc(entry.id)
+            .set(payload)
+            .timeout(_writeTimeout);
       },
       verifyOnServer: () => _exists(userId: userId, entryId: entry.id),
       verifyInCache: () =>
           _exists(userId: userId, entryId: entry.id, source: Source.cache),
     );
     if (res.success) {
-      await MealReminderNotificationHelper().syncReminderForEntry(entry);
+      await AppointmentNotificationHelper().syncReminderForEntry(entry);
     }
     return res;
   }
 
-  Future<MealWriteResponse> updateEntry({
+  Future<AppointmentWriteResponse> updateEntry({
     required String userId,
-    required MealEntry entry,
+    required AppointmentEntry entry,
   }) async {
     final payload = entry.toUpdateMap();
     final res = await _runWrite(
       entryId: entry.id,
       action: 'update',
       operation: () async {
-        await _meals(userId)
+        await _appointments(userId)
             .doc(entry.id)
             .set(payload, SetOptions(merge: true))
             .timeout(_writeTimeout);
@@ -115,21 +122,21 @@ class MealRepository {
           _matches(userId: userId, expected: entry, source: Source.cache),
     );
     if (res.success) {
-      await MealReminderNotificationHelper().syncReminderForEntry(entry);
+      await AppointmentNotificationHelper().syncReminderForEntry(entry);
     }
     return res;
   }
 
-  Future<MealWriteResponse> deleteEntry({
+  Future<AppointmentWriteResponse> deleteEntry({
     required String userId,
     required String entryId,
   }) async {
-    await MealReminderNotificationHelper().cancelReminder(entryId);
+    await AppointmentNotificationHelper().cancelReminder(entryId);
     return _runWrite(
       entryId: entryId,
       action: 'delete',
       operation: () async {
-        await _meals(userId).doc(entryId).delete().timeout(_writeTimeout);
+        await _appointments(userId).doc(entryId).delete().timeout(_writeTimeout);
       },
       verifyOnServer: () async => !(await _exists(
         userId: userId,
@@ -144,27 +151,7 @@ class MealRepository {
     );
   }
 
-  Future<String> uploadMealImage({
-    required String userId,
-    required String mealId,
-    required String originalFileName,
-    required Uint8List bytes,
-    required String contentType,
-  }) async {
-    final safe = _safeFileName(originalFileName);
-    final unique = '${DateTime.now().millisecondsSinceEpoch}_$safe';
-    final ref = _storage.ref('meals/$userId/$mealId/$unique');
-    await ref.putData(bytes, SettableMetadata(contentType: contentType));
-    return ref.getDownloadURL();
-  }
-
-  Future<void> deleteStoredFile(String downloadUrl) async {
-    try {
-      await _storage.refFromURL(downloadUrl).delete();
-    } catch (_) {}
-  }
-
-  Future<MealWriteResponse> _runWrite({
+  Future<AppointmentWriteResponse> _runWrite({
     required String entryId,
     required String action,
     required Future<void> Function() operation,
@@ -173,27 +160,27 @@ class MealRepository {
   }) async {
     try {
       await operation();
-      return MealWriteResponse.success(entryId);
+      return AppointmentWriteResponse.success(entryId);
     } on TimeoutException catch (error) {
       final cacheOk = await verifyInCache();
       final serverOk = cacheOk ? false : await verifyOnServer();
       if (cacheOk) {
-        return MealWriteResponse.success(entryId, isQueuedForSync: true);
+        return AppointmentWriteResponse.success(entryId, isQueuedForSync: true);
       }
       if (serverOk) {
-        return MealWriteResponse.success(entryId);
+        return AppointmentWriteResponse.success(entryId);
       }
-      return MealWriteResponse.failure(
+      return AppointmentWriteResponse.failure(
         entryId,
         error.message ?? error.toString(),
       );
     } on FirebaseException catch (error) {
-      return MealWriteResponse.failure(
+      return AppointmentWriteResponse.failure(
         entryId,
         error.message ?? 'Firestore $action failed.',
       );
     } catch (error) {
-      return MealWriteResponse.failure(entryId, error.toString());
+      return AppointmentWriteResponse.failure(entryId, error.toString());
     }
   }
 
@@ -203,7 +190,7 @@ class MealRepository {
     Source source = Source.server,
   }) async {
     try {
-      final snap = await _meals(
+      final snap = await _appointments(
         userId,
       ).doc(entryId).get(GetOptions(source: source)).timeout(_verifyTimeout);
       return snap.exists;
@@ -214,29 +201,30 @@ class MealRepository {
 
   Future<bool> _matches({
     required String userId,
-    required MealEntry expected,
+    required AppointmentEntry expected,
     Source source = Source.server,
   }) async {
     try {
-      final snap = await _meals(userId)
+      final snap = await _appointments(userId)
           .doc(expected.id)
           .get(GetOptions(source: source))
           .timeout(_verifyTimeout);
       final data = snap.data();
       if (!snap.exists || data == null) return false;
-      final actual = MealEntry.fromMap(expected.id, data);
+      final actual = AppointmentEntry.fromMap(expected.id, data);
       return _sameEntry(expected, actual);
     } catch (_) {
       return false;
     }
   }
 
-  bool _sameEntry(MealEntry a, MealEntry b) {
-    if (!_sameMinute(a.mealAt, b.mealAt)) return false;
-    if (a.mealType != b.mealType) return false;
+  bool _sameEntry(AppointmentEntry a, AppointmentEntry b) {
+    if (!_sameMinute(a.scheduledAt, b.scheduledAt)) return false;
+    if (a.title != b.title) return false;
     if (a.status != b.status) return false;
     if (a.notes != b.notes) return false;
-    if (a.imageUrl != b.imageUrl) return false;
+    if (a.location != b.location) return false;
+    if (a.doctor != b.doctor) return false;
     return true;
   }
 
@@ -248,23 +236,18 @@ class MealRepository {
         x.minute == y.minute;
   }
 
-  /// Meals with [mealAt] in \[start, end\] (inclusive), ordered soonest first.
-  Future<List<MealEntry>> getMealsBetween({
+  /// Appointments with [scheduledAt] in \[start, end\] (inclusive), ordered soonest first.
+  Future<List<AppointmentEntry>> getAppointmentsScheduledBetween({
     required String userId,
     required DateTime start,
     required DateTime end,
   }) async {
-    final snap = await _meals(userId)
-        .where('mealAt', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
-        .where('mealAt', isLessThanOrEqualTo: Timestamp.fromDate(end))
-        .orderBy('mealAt')
+    final snap = await _appointments(userId)
+        .where('scheduledAt', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('scheduledAt', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .orderBy('scheduledAt')
         .get()
         .timeout(_readTimeout);
-    return snap.docs.map(MealEntry.fromFirestore).toList();
-  }
-
-  static String _safeFileName(String name) {
-    final base = p.basename(name).replaceAll(RegExp(r'[^\w.\-]+'), '_');
-    return base.isEmpty ? 'image' : base;
+    return snap.docs.map(AppointmentEntry.fromFirestore).toList();
   }
 }

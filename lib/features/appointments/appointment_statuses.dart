@@ -1,10 +1,10 @@
-abstract final class MealStatuses {
-  static const taken = 'Taken';
+abstract final class AppointmentStatuses {
+  static const attended = 'Attended';
   static const missed = 'Missed';
-  /// Future / planned — was stored as `Pending` in older app versions.
+  /// Upcoming visit — was stored as `Pending` in older app versions.
   static const scheduled = 'Scheduled';
 
-  static const all = [taken, missed, scheduled];
+  static const all = [attended, missed, scheduled];
 
   /// Maps legacy Firestore value `Pending` to [scheduled].
   static String normalizeFromStorage(String? raw) {

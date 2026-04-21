@@ -19,9 +19,18 @@ import '../widgets/date_picker_field.dart';
 import '../widgets/primary_button.dart';
 
 class AddUpdateMealScreen extends ConsumerStatefulWidget {
-  const AddUpdateMealScreen({super.key, this.existing});
+  const AddUpdateMealScreen({
+    super.key,
+    this.existing,
+    this.initialMealAt,
+    this.initialNotes,
+    this.lockStatusToScheduled = false,
+  });
 
   final MealEntry? existing;
+  final DateTime? initialMealAt;
+  final String? initialNotes;
+  final bool lockStatusToScheduled;
 
   @override
   ConsumerState<AddUpdateMealScreen> createState() =>
@@ -55,8 +64,14 @@ class _AddUpdateMealScreenState extends ConsumerState<AddUpdateMealScreen> {
       _existingImageUrl = e.imageUrl;
     } else {
       _mealType = MealTypes.breakfast;
-      _status = MealStatuses.pending;
-      _mealAt = DateTime.now();
+      _status = MealStatuses.scheduled;
+      _mealAt = widget.initialMealAt ?? DateTime.now();
+      if (widget.initialNotes != null && widget.initialNotes!.isNotEmpty) {
+        _notesController.text = widget.initialNotes!;
+      }
+      if (widget.lockStatusToScheduled) {
+        _status = MealStatuses.scheduled;
+      }
     }
   }
 
@@ -256,6 +271,7 @@ class _AddUpdateMealScreenState extends ConsumerState<AddUpdateMealScreen> {
                 items: MealStatuses.all
                     .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                     .toList(),
+                enabled: !(widget.lockStatusToScheduled && !_isEdit),
                 onChanged: (v) => setState(() => _status = v),
               ),
               const SizedBox(height: AppSpacing.md),

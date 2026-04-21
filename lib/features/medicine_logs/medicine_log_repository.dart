@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import '../../services/medicine_log_reminder_notification_helper.dart';
 import '../../services/medicine_notification_helper.dart';
 import '../meals/meal_statuses.dart';
 import '../medicine_inventory/medicine_entry.dart';
@@ -109,6 +110,7 @@ class MedicineLogRepository {
         }
       }).timeout(_writeTimeout);
       await _notifyInventoryAlerts(userId, entry.medicineId);
+      await MedicineLogReminderNotificationHelper().syncReminderForEntry(entry);
       return MedicineLogWriteResponse.success(entry.id);
     } catch (e) {
       return MedicineLogWriteResponse.failure(
@@ -156,6 +158,7 @@ class MedicineLogRepository {
         });
       }).timeout(_writeTimeout);
       await _notifyInventoryAlerts(userId, entry.medicineId);
+      await MedicineLogReminderNotificationHelper().syncReminderForEntry(entry);
       return MedicineLogWriteResponse.success(entry.id);
     } catch (e) {
       return MedicineLogWriteResponse.failure(
@@ -169,6 +172,7 @@ class MedicineLogRepository {
     required String userId,
     required MedicineLogEntry entry,
   }) async {
+    await MedicineLogReminderNotificationHelper().cancelReminder(entry.id);
     try {
       await _firestore.runTransaction((txn) async {
         final logRef = _logs(userId).doc(entry.id);
@@ -202,5 +206,20 @@ class MedicineLogRepository {
         e is StateError ? e.message : e.toString(),
       );
     }
+  }
+
+  /// Logs with [loggedAt] in \[start, end\] (inclusive), ordered soonest first.
+  Future<List<MedicineLogEntry>> getLogsBetween({
+    required String userId,
+    required DateTime start,
+    required DateTime end,
+  }) async {
+    final snap = await _logs(userId)
+        .where('loggedAt', isGreaterThanOrEqualTo: Timestamp.fromDate(start))
+        .where('loggedAt', isLessThanOrEqualTo: Timestamp.fromDate(end))
+        .orderBy('loggedAt')
+        .get()
+        .timeout(_readTimeout);
+    return snap.docs.map(MedicineLogEntry.fromFirestore).toList();
   }
 }

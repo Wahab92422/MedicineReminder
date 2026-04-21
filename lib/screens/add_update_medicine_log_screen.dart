@@ -16,9 +16,18 @@ import '../widgets/primary_button.dart';
 import '../widgets/skeleton_placeholders.dart';
 
 class AddUpdateMedicineLogScreen extends ConsumerStatefulWidget {
-  const AddUpdateMedicineLogScreen({super.key, this.existing});
+  const AddUpdateMedicineLogScreen({
+    super.key,
+    this.existing,
+    this.initialLoggedAt,
+    this.initialNotes,
+    this.lockStatusToScheduled = false,
+  });
 
   final MedicineLogEntry? existing;
+  final DateTime? initialLoggedAt;
+  final String? initialNotes;
+  final bool lockStatusToScheduled;
 
   @override
   ConsumerState<AddUpdateMedicineLogScreen> createState() =>
@@ -59,8 +68,14 @@ class _AddUpdateMedicineLogScreenState
       _unitsController.text = '${e.units}';
       _notesController.text = e.notes;
     } else {
-      _status = MealStatuses.pending;
-      _loggedAt = DateTime.now();
+      _status = MealStatuses.scheduled;
+      _loggedAt = widget.initialLoggedAt ?? DateTime.now();
+      if (widget.initialNotes != null && widget.initialNotes!.isNotEmpty) {
+        _notesController.text = widget.initialNotes!;
+      }
+      if (widget.lockStatusToScheduled) {
+        _status = MealStatuses.scheduled;
+      }
     }
   }
 
@@ -255,6 +270,7 @@ class _AddUpdateMedicineLogScreenState
                 items: MealStatuses.all
                     .map((s) => DropdownMenuItem(value: s, child: Text(s)))
                     .toList(),
+                enabled: !(widget.lockStatusToScheduled && !_isEdit),
                 onChanged: (v) => setState(() => _status = v),
               ),
               const SizedBox(height: AppSpacing.md),

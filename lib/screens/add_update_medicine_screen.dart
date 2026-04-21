@@ -281,8 +281,8 @@ class _AddUpdateMedicineScreenState
       appBar: AppScreenHeader(
         title: _isEdit ? 'Edit Medicine' : 'Add Medicine',
         subtitle: _isEdit
-            ? 'Update medicine details and inventory.'
-            : 'Add a new medicine to your inventory.',
+            ? 'Update medicine details and inventory. For dose reminders, add or edit a log with status Scheduled.'
+            : 'Add a new medicine to your inventory. After saving, use Medicine logs with status Scheduled to get dose reminders.',
         icon: _isEdit ? Icons.edit_note_outlined : Icons.add_rounded,
       ),
       body: Stack(

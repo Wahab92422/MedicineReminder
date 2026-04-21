@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../meals/meal_statuses.dart';
 
-/// A single dose log for an inventory medicine (taken / missed / pending).
+/// A single dose log for an inventory medicine (taken / missed / scheduled).
 class MedicineLogEntry {
   const MedicineLogEntry({
     required this.id,
@@ -20,7 +20,7 @@ class MedicineLogEntry {
   final String medicineId;
   final String medicineName;
   final DateTime loggedAt;
-  /// Same labels as meals: [MealStatuses.taken], [MealStatuses.missed], [MealStatuses.pending].
+  /// Same labels as meals: [MealStatuses.taken], [MealStatuses.missed], [MealStatuses.scheduled].
   final String status;
   /// Units consumed when status is [MealStatuses.taken] (deducted from inventory).
   final int units;
@@ -48,7 +48,7 @@ class MedicineLogEntry {
       medicineId: map['medicineId'] as String? ?? '',
       medicineName: map['medicineName'] as String? ?? '',
       loggedAt: _readTs(map['loggedAt']),
-      status: map['status'] as String? ?? MealStatuses.pending,
+      status: MealStatuses.normalizeFromStorage(map['status'] as String?),
       units: (map['units'] as num?)?.toInt().clamp(1, 999999) ?? 1,
       notes: map['notes'] as String? ?? '',
       createdAt: _readTs(map['createdAt']),

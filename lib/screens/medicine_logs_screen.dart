@@ -270,7 +270,7 @@ class _MedicineLogsScreenState extends ConsumerState<MedicineLogsScreen> {
                 child: EmptyStateWidget(
                   title: 'No dose logs yet',
                   subtitle:
-                      'Log doses from your inventory with Taken, Missed, or Pending. Taken reduces stock.',
+                      'Log doses from your inventory with Taken, Missed, or Scheduled. Taken reduces stock.',
                   icon: Icons.medication_outlined,
                 ),
               ),
@@ -359,7 +359,7 @@ class _MedicineLogsOverviewCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             entryCount == 0
-                ? 'Add a log to record taken, missed, or pending doses.'
+                ? 'Add a log to record taken, missed, or scheduled doses.'
                 : '$entryCount log${entryCount == 1 ? '' : 's'}. Taken doses update inventory automatically.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: scheme.onSurfaceVariant,

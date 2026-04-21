@@ -6,7 +6,6 @@ import '../features/medicine_inventory/medicine_providers.dart';
 import '../features/notifications/notification_model.dart';
 import '../features/notifications/notification_providers.dart';
 import '../services/medicine_notification_helper.dart';
-import '../services/notification_service.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/app_screen_header.dart';
 import '../widgets/empty_state_widget.dart';
@@ -67,7 +66,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('Delete all notifications?'),
+        title: const Text('Delete all alerts?'),
         content: const Text('This action cannot be undone.'),
         actions: [
           TextButton(
@@ -89,30 +88,18 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
     }
   }
 
-  Future<void> _testNotification() async {
-    await NotificationService().showTestNotification();
-    if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text(
-          'Test notification sent. Check the system notification area (and allow alerts in Settings if needed).',
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
     if (uid.isEmpty) {
       return Scaffold(
         appBar: AppScreenHeader(
-          title: 'Notifications',
+          title: 'Alerts',
           subtitle: 'Medicine alerts and reminders',
           icon: Icons.notifications_rounded,
         ),
         body: const Center(
-          child: Text('Sign in to view notifications.'),
+          child: Text('Sign in to view alerts.'),
         ),
       );
     }
@@ -142,15 +129,10 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
 
     return Scaffold(
       appBar: AppScreenHeader(
-        title: 'Notifications',
+        title: 'Alerts',
         subtitle: 'Medicine alerts and reminders (updates live)',
         icon: Icons.notifications_rounded,
         actions: [
-          IconButton(
-            onPressed: _testNotification,
-            icon: const Icon(Icons.notification_add_rounded),
-            tooltip: 'Test Notification',
-          ),
           if (hasItems) ...[
             IconButton(
               onPressed: _markAllAsRead,

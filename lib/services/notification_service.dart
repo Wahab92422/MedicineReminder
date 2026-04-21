@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:medicine_app/services/notification_android_schedule_mode.dart';
+import 'package:medicine_app/services/notification_schedule_instant.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
-import 'package:timezone/timezone.dart' as tz;
 
 /// Local notifications (scheduled + immediate) for medicine alerts.
 ///
@@ -16,6 +17,10 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+
+  /// Android: exact vs inexact; refreshed in [_requestPermissions].
+  AndroidScheduleMode _androidReminderScheduleMode =
+      AndroidScheduleMode.inexactAllowWhileIdle;
 
   /// Default banner/list presentation; no custom `.aiff` (files not bundled).
   static const DarwinNotificationDetails _darwinDefault =
@@ -39,7 +44,6 @@ class NotificationService {
 
   Future<void> initialize() async {
     tzdata.initializeTimeZones();
-    tz.setLocalLocation(tz.UTC);
 
     const AndroidInitializationSettings androidInitializationSettings =
         AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -107,6 +111,54 @@ class NotificationService {
       vibrationPattern: Int64List.fromList([0, 200, 150, 200]),
     );
 
+    final AndroidNotificationChannel appointmentChannel =
+        AndroidNotificationChannel(
+      'appointment_reminder_channel',
+      'Appointment reminders',
+      description: 'Scheduled reminders for your logged appointments',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+    );
+
+    final AndroidNotificationChannel agendaChannel = AndroidNotificationChannel(
+      'agenda_reminder_channel',
+      'Schedule reminders',
+      description:
+          'Meal, medicine, appointment, and general reminders from Schedule',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+    );
+
+    final AndroidNotificationChannel mealScheduledChannel =
+        AndroidNotificationChannel(
+      'meal_scheduled_reminder_channel',
+      'Meal reminders',
+      description: 'Alerts for meals you marked as scheduled',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+    );
+
+    final AndroidNotificationChannel medicineDoseScheduledChannel =
+        AndroidNotificationChannel(
+      'medicine_dose_scheduled_channel',
+      'Medicine dose reminders',
+      description: 'Alerts for medicine doses you marked as scheduled',
+      importance: Importance.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+    );
+
     final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
         _flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
@@ -116,6 +168,10 @@ class NotificationService {
       await androidPlugin.createNotificationChannel(lowStockChannel);
       await androidPlugin.createNotificationChannel(expiryChannel);
       await androidPlugin.createNotificationChannel(reminderChannel);
+      await androidPlugin.createNotificationChannel(appointmentChannel);
+      await androidPlugin.createNotificationChannel(agendaChannel);
+      await androidPlugin.createNotificationChannel(mealScheduledChannel);
+      await androidPlugin.createNotificationChannel(medicineDoseScheduledChannel);
     }
   }
 
@@ -145,10 +201,21 @@ class NotificationService {
 
     if (androidPlugin != null) {
       await androidPlugin.requestNotificationsPermission();
+      final bool? canExact =
+          await androidPlugin.canScheduleExactNotifications();
+      _androidReminderScheduleMode =
+          androidReminderScheduleModeForExactAlarmPermission(canExact);
+      if (kDebugMode && canExact != true) {
+        debugPrint(
+          'NotificationService: exact alarms not granted; scheduled reminders '
+          'use inexact timing. Enable Alarms & reminders (or Alarms only) for '
+          'this app in system settings for precise times.',
+        );
+      }
     }
   }
 
-  /// Re-request OS notification permissions (same as test notification path).
+  /// Re-request OS notification permissions where supported.
   Future<void> ensureNotificationPermissions() => _requestPermissions();
 
   void _onDidReceiveNotificationResponse(NotificationResponse response) {
@@ -288,13 +355,230 @@ class NotificationService {
         title: 'Medicine Expiry Reminder',
         body:
             '$medicineName expires on ${expiryDate.toString().split(' ')[0]}. Please check and replace if needed.',
-        scheduledDate: tz.TZDateTime.from(notificationTime, tz.local),
+        scheduledDate: tzUtcInstantForSchedule(notificationTime),
         notificationDetails: notificationDetails,
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        androidScheduleMode: _androidReminderScheduleMode,
       );
       debugPrint('Scheduled expiry reminder for $medicineName');
     } catch (e) {
       debugPrint('Failed to schedule expiry reminder: $e');
+    }
+  }
+
+  /// Reminder at [scheduledAt] for a user-logged appointment (not external booking).
+  Future<void> scheduleAppointmentReminder({
+    required String visitTitle,
+    required DateTime scheduledAt,
+    required int notificationId,
+    String? doctorName,
+    String? location,
+  }) async {
+    if (!scheduledAt.isAfter(DateTime.now())) {
+      debugPrint(
+        'Skipping appointment reminder — scheduled time is not in the future',
+      );
+      return;
+    }
+
+    final AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'appointment_reminder_channel',
+      'Appointment reminders',
+      channelDescription: 'Scheduled reminders for your logged appointments',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      icon: '@mipmap/ic_launcher',
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+    );
+
+    final notificationDetails = _detailsWithDarwin(
+      android: androidNotificationDetails,
+    );
+
+    try {
+      final when = _formatUserDateTime(scheduledAt);
+      final buffer = StringBuffer()
+        ..writeln('You asked to be reminded about this visit.')
+        ..writeln()
+        ..writeln('When: $when');
+      if (doctorName != null && doctorName.trim().isNotEmpty) {
+        buffer.writeln('Doctor: ${doctorName.trim()}');
+      }
+      if (location != null && location.trim().isNotEmpty) {
+        buffer.writeln('Where: ${location.trim()}');
+      }
+      buffer.writeln();
+      buffer.write('Open the app to view or edit this appointment.');
+
+      await _flutterLocalNotificationsPlugin.zonedSchedule(
+        id: notificationId,
+        title: 'Upcoming appointment: $visitTitle',
+        body: buffer.toString(),
+        scheduledDate: tzUtcInstantForSchedule(scheduledAt),
+        notificationDetails: notificationDetails,
+        androidScheduleMode: _androidReminderScheduleMode,
+      );
+      debugPrint('Scheduled appointment reminder for $visitTitle');
+    } catch (e) {
+      debugPrint('Failed to schedule appointment reminder: $e');
+    }
+  }
+
+  /// Scheduled [mealAt] when meal status is “Scheduled” (planned meal reminder).
+  Future<void> scheduleMealScheduledReminder({
+    required String mealTypeLabel,
+    required DateTime mealAt,
+    required int notificationId,
+    String? extraDetail,
+  }) async {
+    if (!mealAt.isAfter(DateTime.now())) {
+      debugPrint('Skipping meal reminder — time is not in the future');
+      return;
+    }
+
+    final android = AndroidNotificationDetails(
+      'meal_scheduled_reminder_channel',
+      'Meal reminders',
+      channelDescription: 'Alerts for meals you marked as scheduled',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      icon: '@mipmap/ic_launcher',
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+    );
+
+    final when = _formatUserDateTime(mealAt);
+    final detail = extraDetail != null && extraDetail.trim().isNotEmpty
+        ? '\n\nNote: ${extraDetail.trim()}'
+        : '';
+
+    try {
+      await _flutterLocalNotificationsPlugin.zonedSchedule(
+        id: notificationId,
+        title: 'Meal reminder',
+        body:
+            'Reminder: your $mealTypeLabel is planned for $when.$detail\n\nOpen the app to log or change this meal.',
+        scheduledDate: tzUtcInstantForSchedule(mealAt),
+        notificationDetails: _detailsWithDarwin(android: android),
+        androidScheduleMode: _androidReminderScheduleMode,
+      );
+      debugPrint('Scheduled meal reminder for $mealTypeLabel');
+    } catch (e) {
+      debugPrint('Failed to schedule meal reminder: $e');
+    }
+  }
+
+  /// Scheduled [loggedAt] when dose log status is “Scheduled”.
+  Future<void> scheduleMedicineDoseScheduledReminder({
+    required String medicineName,
+    required DateTime loggedAt,
+    required int notificationId,
+    String? extraDetail,
+  }) async {
+    if (!loggedAt.isAfter(DateTime.now())) {
+      debugPrint('Skipping medicine dose reminder — time is not in the future');
+      return;
+    }
+
+    final android = AndroidNotificationDetails(
+      'medicine_dose_scheduled_channel',
+      'Medicine dose reminders',
+      channelDescription: 'Alerts for medicine doses you marked as scheduled',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      icon: '@mipmap/ic_launcher',
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+    );
+
+    final when = _formatUserDateTime(loggedAt);
+    final detail = extraDetail != null && extraDetail.trim().isNotEmpty
+        ? '\n\nNote: ${extraDetail.trim()}'
+        : '';
+
+    try {
+      await _flutterLocalNotificationsPlugin.zonedSchedule(
+        id: notificationId,
+        title: 'Medicine reminder',
+        body:
+            'Reminder: take $medicineName around $when.$detail\n\nOpen the app to log this dose when you take it.',
+        scheduledDate: tzUtcInstantForSchedule(loggedAt),
+        notificationDetails: _detailsWithDarwin(android: android),
+        androidScheduleMode: _androidReminderScheduleMode,
+      );
+      debugPrint('Scheduled medicine dose reminder for $medicineName');
+    } catch (e) {
+      debugPrint('Failed to schedule medicine dose reminder: $e');
+    }
+  }
+
+  String _formatUserDateTime(DateTime d) {
+    final x = d.toLocal();
+    final date =
+        '${x.year}-${x.month.toString().padLeft(2, '0')}-${x.day.toString().padLeft(2, '0')}';
+    final time =
+        '${x.hour.toString().padLeft(2, '0')}:${x.minute.toString().padLeft(2, '0')}';
+    return '$date at $time';
+  }
+
+  /// User-created reminders from the Schedule screen (general type only in UI).
+  Future<void> scheduleAgendaReminder({
+    required String title,
+    required String kindLabel,
+    required DateTime scheduledAt,
+    required int notificationId,
+    String? notes,
+  }) async {
+    if (!scheduledAt.isAfter(DateTime.now())) {
+      debugPrint(
+        'Skipping agenda reminder — scheduled time is not in the future',
+      );
+      return;
+    }
+
+    final AndroidNotificationDetails androidNotificationDetails =
+        AndroidNotificationDetails(
+      'agenda_reminder_channel',
+      'Schedule reminders',
+      channelDescription:
+          'Meal, medicine, appointment, and general reminders from Schedule',
+      importance: Importance.high,
+      priority: Priority.high,
+      playSound: true,
+      enableVibration: true,
+      enableLights: true,
+      icon: '@mipmap/ic_launcher',
+      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+    );
+
+    final notificationDetails = _detailsWithDarwin(
+      android: androidNotificationDetails,
+    );
+
+    try {
+      final when = _formatUserDateTime(scheduledAt);
+      final noteLine = notes != null && notes.trim().isNotEmpty
+          ? '\n\nDetails: ${notes.trim()}'
+          : '';
+      await _flutterLocalNotificationsPlugin.zonedSchedule(
+        id: notificationId,
+        title: 'Reminder: $title',
+        body:
+            'Type: $kindLabel\nWhen: $when$noteLine\n\nOpen the app to manage schedule reminders.',
+        scheduledDate: tzUtcInstantForSchedule(scheduledAt),
+        notificationDetails: notificationDetails,
+        androidScheduleMode: _androidReminderScheduleMode,
+      );
+      debugPrint('Scheduled agenda reminder: $title');
+    } catch (e) {
+      debugPrint('Failed to schedule agenda reminder: $e');
     }
   }
 
@@ -313,45 +597,6 @@ class NotificationService {
       debugPrint('Cancelled all notifications');
     } catch (e) {
       debugPrint('Failed to cancel all notifications: $e');
-    }
-  }
-
-  /// Immediate banner on all platforms; re-requests OS permission where needed.
-  Future<void> showTestNotification() async {
-    await ensureNotificationPermissions();
-
-    final AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
-      'medicine_low_stock_channel',
-      'Medicine Low Stock',
-      channelDescription:
-          'Notifications for medicines running low on stock',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      icon: '@mipmap/ic_launcher',
-      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
-    );
-
-    final notificationDetails = _detailsWithDarwin(
-      android: androidNotificationDetails,
-    );
-
-    final id = DateTime.now().millisecondsSinceEpoch.remainder(1 << 31);
-
-    try {
-      await _flutterLocalNotificationsPlugin.show(
-        id: id,
-        title: 'Test notification',
-        body: 'If you see this, local notifications are working.',
-        notificationDetails: notificationDetails,
-        payload: 'test_notification',
-      );
-      debugPrint('Test notification show() completed (id=$id)');
-    } catch (e, st) {
-      debugPrint('Failed to show test notification: $e\n$st');
     }
   }
 }

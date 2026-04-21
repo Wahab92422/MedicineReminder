@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'meal_statuses.dart';
+
 class MealEntry {
   const MealEntry({
     required this.id,
@@ -36,7 +38,7 @@ class MealEntry {
       id: id,
       mealAt: _readTs(map['mealAt']),
       mealType: map['mealType'] as String? ?? '',
-      status: map['status'] as String? ?? '',
+      status: MealStatuses.normalizeFromStorage(map['status'] as String?),
       notes: map['notes'] as String? ?? '',
       imageUrl: map['imageUrl'] as String?,
       createdAt: _readTs(map['createdAt']),
