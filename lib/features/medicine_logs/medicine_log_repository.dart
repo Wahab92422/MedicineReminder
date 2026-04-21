@@ -222,4 +222,29 @@ class MedicineLogRepository {
         .timeout(_readTimeout);
     return snap.docs.map(MedicineLogEntry.fromFirestore).toList();
   }
+
+  Future<MedicineLogEntry?> getEntry({
+    required String userId,
+    required String entryId,
+  }) async {
+    final snap =
+        await _logs(userId).doc(entryId).get().timeout(_readTimeout);
+    if (!snap.exists) return null;
+    return MedicineLogEntry.fromFirestore(snap);
+  }
+
+  /// Status [MealStatuses.scheduled] only; sorted by [loggedAt] soonest first.
+  Future<List<MedicineLogEntry>> listScheduledEntries({
+    required String userId,
+    int limit = 200,
+  }) async {
+    final snap = await _logs(userId)
+        .where('status', isEqualTo: MealStatuses.scheduled)
+        .get()
+        .timeout(_readTimeout);
+    final list = snap.docs.map(MedicineLogEntry.fromFirestore).toList()
+      ..sort((a, b) => a.loggedAt.compareTo(b.loggedAt));
+    if (list.length <= limit) return list;
+    return list.take(limit).toList();
+  }
 }

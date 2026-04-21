@@ -17,10 +17,12 @@ class UserScheduleReminderNotificationHelper {
   Future<void> syncReminder(UserScheduleReminder reminder) async {
     final notificationId = stableNotificationId(reminder.id);
     await _notificationService.cancelNotification(notificationId);
+    if (reminder.reminderOutcome != null) return;
     if (!reminder.scheduledAt.isAfter(DateTime.now())) return;
 
     await _notificationService.ensureNotificationPermissions();
     await _notificationService.scheduleAgendaReminder(
+      reminderId: reminder.id,
       title: reminder.title,
       kindLabel: reminder.kind.label,
       scheduledAt: reminder.scheduledAt,

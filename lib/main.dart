@@ -3,6 +3,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'app/app_navigator.dart';
 import 'screens/app_splash_screen.dart';
 import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
@@ -23,6 +24,7 @@ class MedicineApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
       locale: const Locale('en', 'US'),

@@ -12,6 +12,7 @@ class UserScheduleReminder {
     required this.kind,
     required this.createdAt,
     required this.updatedAt,
+    this.reminderOutcome,
   });
 
   final String id;
@@ -22,6 +23,9 @@ class UserScheduleReminder {
   final ScheduleReminderKind kind;
   final DateTime createdAt;
   final DateTime updatedAt;
+
+  /// `null` = still scheduled; `completed` or `missed` when resolved.
+  final String? reminderOutcome;
 
   static DateTime _readTs(dynamic v) {
     if (v is Timestamp) return v.toDate();
@@ -47,6 +51,7 @@ class UserScheduleReminder {
       kind: kind,
       createdAt: _readTs(map['createdAt']),
       updatedAt: _readTs(map['updatedAt']),
+      reminderOutcome: map['reminderOutcome'] as String?,
     );
   }
 
@@ -59,6 +64,28 @@ class UserScheduleReminder {
       'kind': kind.wireValue,
       'createdAt': Timestamp.fromDate(now),
       'updatedAt': Timestamp.fromDate(now),
+      if (reminderOutcome != null) 'reminderOutcome': reminderOutcome,
     };
+  }
+
+  UserScheduleReminder copyWith({
+    String? title,
+    String? notes,
+    DateTime? scheduledAt,
+    ScheduleReminderKind? kind,
+    String? reminderOutcome,
+    DateTime? updatedAt,
+  }) {
+    return UserScheduleReminder(
+      id: id,
+      userId: userId,
+      title: title ?? this.title,
+      notes: notes ?? this.notes,
+      scheduledAt: scheduledAt ?? this.scheduledAt,
+      kind: kind ?? this.kind,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      reminderOutcome: reminderOutcome ?? this.reminderOutcome,
+    );
   }
 }

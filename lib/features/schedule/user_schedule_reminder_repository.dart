@@ -55,4 +55,42 @@ class UserScheduleReminderRepository {
     await UserScheduleReminderNotificationHelper().cancelReminder(reminderId);
     await _col(userId).doc(reminderId).delete().timeout(_writeTimeout);
   }
+
+  Future<UserScheduleReminder?> getReminder({
+    required String userId,
+    required String reminderId,
+  }) async {
+    final snap =
+        await _col(userId).doc(reminderId).get().timeout(_readTimeout);
+    if (!snap.exists) return null;
+    return UserScheduleReminder.fromFirestore(snap);
+  }
+
+  /// Recent agenda reminders still open ([reminderOutcome] null), newest [scheduledAt] first.
+  Future<List<UserScheduleReminder>> listOpenReminders({
+    required String userId,
+    int limit = 150,
+  }) async {
+    final snap = await _col(userId)
+        .orderBy('scheduledAt', descending: true)
+        .limit(limit)
+        .get()
+        .timeout(_readTimeout);
+    return snap.docs
+        .map(UserScheduleReminder.fromFirestore)
+        .where((r) => r.reminderOutcome == null)
+        .toList();
+  }
+
+  Future<void> setReminderOutcome({
+    required String userId,
+    required String reminderId,
+    required String outcome,
+  }) async {
+    await _col(userId).doc(reminderId).update({
+      'reminderOutcome': outcome,
+      'updatedAt': FieldValue.serverTimestamp(),
+    }).timeout(_writeTimeout);
+    await UserScheduleReminderNotificationHelper().cancelReminder(reminderId);
+  }
 }

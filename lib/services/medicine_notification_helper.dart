@@ -176,6 +176,7 @@ class MedicineNotificationHelper {
 
     await _notificationService.scheduleExpiryReminder(
       medicineName: medicine.name,
+      medicineId: medicine.id,
       expiryDate: medicine.expiryDate,
       notificationId: notificationId,
     );

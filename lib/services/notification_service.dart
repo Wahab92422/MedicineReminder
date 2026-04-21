@@ -1,7 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:medicine_app/app/app_navigator.dart';
+import 'package:medicine_app/screens/medicine_inventory_screen.dart';
+import 'package:medicine_app/screens/reminder_indicator_screen.dart';
 import 'package:medicine_app/services/notification_android_schedule_mode.dart';
 import 'package:medicine_app/services/notification_schedule_instant.dart';
+import 'package:medicine_app/services/reminder_notification_payload.dart';
 import 'package:medicine_app/utils/app_date_time_format.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 
@@ -220,7 +227,73 @@ class NotificationService {
   Future<void> ensureNotificationPermissions() => _requestPermissions();
 
   void _onDidReceiveNotificationResponse(NotificationResponse response) {
-    debugPrint('Notification tapped: ${response.payload}');
+    final p = response.payload;
+    debugPrint('Notification tapped: $p');
+    if (p == null || p.isEmpty) return;
+    _scheduleRouteFromPayload(p);
+  }
+
+  /// Cold start: user opened the app by tapping a notification.
+  Future<void> handlePendingLaunchNotification() async {
+    final details =
+        await _flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+    if (details?.didNotificationLaunchApp != true) return;
+    final p = details!.notificationResponse?.payload;
+    if (p == null || p.isEmpty) return;
+    _scheduleRouteFromPayload(p);
+  }
+
+  /// Routes as soon as [appNavigatorKey] is mounted: microtask first (foreground
+  /// taps), then post-frame retries (cold start / first frame).
+  void _scheduleRouteFromPayload(String payload) {
+    const maxFrames = 24;
+    void attempt(int frameIndex) {
+      final nav = appNavigatorKey.currentState;
+      if (nav != null) {
+        _routeFromPayload(payload);
+        return;
+      }
+      if (frameIndex >= maxFrames) {
+        debugPrint(
+          'NotificationService: navigator not ready; dropping route for tap',
+        );
+        return;
+      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        attempt(frameIndex + 1);
+      });
+    }
+
+    scheduleMicrotask(() => attempt(0));
+  }
+
+  void _routeFromPayload(String payload) {
+    final parsed = ReminderNotificationPayload.tryParse(payload);
+    if (parsed != null) {
+      if (parsed.kind == ReminderPayloadKind.expiry) {
+        appNavigatorKey.currentState?.push(
+          MaterialPageRoute<void>(
+            builder: (_) => const MedicineInventoryScreen(),
+          ),
+        );
+        return;
+      }
+      appNavigatorKey.currentState?.push(
+        MaterialPageRoute<void>(
+          builder: (_) => ReminderIndicatorScreen(payload: parsed),
+        ),
+      );
+      return;
+    }
+
+    // Immediate [show] notifications use string payloads, not JSON — still route.
+    if (isLegacyInventoryBannerPayload(payload)) {
+      appNavigatorKey.currentState?.push(
+        MaterialPageRoute<void>(
+          builder: (_) => const MedicineInventoryScreen(),
+        ),
+      );
+    }
   }
 
   Future<void> showLowStockNotification({
@@ -321,6 +394,7 @@ class NotificationService {
 
   Future<void> scheduleExpiryReminder({
     required String medicineName,
+    required String medicineId,
     required DateTime expiryDate,
     required int notificationId,
   }) async {
@@ -362,6 +436,11 @@ class NotificationService {
         scheduledDate: tzUtcInstantForSchedule(notificationTime),
         notificationDetails: notificationDetails,
         androidScheduleMode: _androidReminderScheduleMode,
+        payload: ReminderNotificationPayload.encode(
+          kind: ReminderPayloadKind.expiry,
+          entityId: medicineId,
+          scheduledAt: notificationTime,
+        ),
       );
       debugPrint('Scheduled expiry reminder for $medicineName');
     } catch (e) {
@@ -371,6 +450,7 @@ class NotificationService {
 
   /// Reminder at [scheduledAt] for a user-logged appointment (not external booking).
   Future<void> scheduleAppointmentReminder({
+    required String appointmentId,
     required String visitTitle,
     required DateTime scheduledAt,
     required int notificationId,
@@ -422,6 +502,11 @@ class NotificationService {
         scheduledDate: tzUtcInstantForSchedule(scheduledAt),
         notificationDetails: notificationDetails,
         androidScheduleMode: _androidReminderScheduleMode,
+        payload: ReminderNotificationPayload.encode(
+          kind: ReminderPayloadKind.appointment,
+          entityId: appointmentId,
+          scheduledAt: scheduledAt,
+        ),
       );
       debugPrint('Scheduled appointment reminder for $visitTitle');
     } catch (e) {
@@ -431,6 +516,7 @@ class NotificationService {
 
   /// Scheduled [mealAt] when meal status is “Scheduled” (planned meal reminder).
   Future<void> scheduleMealScheduledReminder({
+    required String mealId,
     required String mealTypeLabel,
     required DateTime mealAt,
     required int notificationId,
@@ -468,6 +554,11 @@ class NotificationService {
         scheduledDate: tzUtcInstantForSchedule(mealAt),
         notificationDetails: _detailsWithDarwin(android: android),
         androidScheduleMode: _androidReminderScheduleMode,
+        payload: ReminderNotificationPayload.encode(
+          kind: ReminderPayloadKind.meal,
+          entityId: mealId,
+          scheduledAt: mealAt,
+        ),
       );
       debugPrint('Scheduled meal reminder for $mealTypeLabel');
     } catch (e) {
@@ -477,6 +568,7 @@ class NotificationService {
 
   /// Scheduled [loggedAt] when dose log status is “Scheduled”.
   Future<void> scheduleMedicineDoseScheduledReminder({
+    required String logId,
     required String medicineName,
     required DateTime loggedAt,
     required int notificationId,
@@ -514,6 +606,11 @@ class NotificationService {
         scheduledDate: tzUtcInstantForSchedule(loggedAt),
         notificationDetails: _detailsWithDarwin(android: android),
         androidScheduleMode: _androidReminderScheduleMode,
+        payload: ReminderNotificationPayload.encode(
+          kind: ReminderPayloadKind.medicineLog,
+          entityId: logId,
+          scheduledAt: loggedAt,
+        ),
       );
       debugPrint('Scheduled medicine dose reminder for $medicineName');
     } catch (e) {
@@ -526,6 +623,7 @@ class NotificationService {
 
   /// User-created reminders from the Schedule screen (general type only in UI).
   Future<void> scheduleAgendaReminder({
+    required String reminderId,
     required String title,
     required String kindLabel,
     required DateTime scheduledAt,
@@ -571,6 +669,11 @@ class NotificationService {
         scheduledDate: tzUtcInstantForSchedule(scheduledAt),
         notificationDetails: notificationDetails,
         androidScheduleMode: _androidReminderScheduleMode,
+        payload: ReminderNotificationPayload.encode(
+          kind: ReminderPayloadKind.agenda,
+          entityId: reminderId,
+          scheduledAt: scheduledAt,
+        ),
       );
       debugPrint('Scheduled agenda reminder: $title');
     } catch (e) {

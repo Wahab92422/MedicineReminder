@@ -24,6 +24,7 @@ class AppointmentNotificationHelper {
 
     await _notificationService.ensureNotificationPermissions();
     await _notificationService.scheduleAppointmentReminder(
+      appointmentId: entry.id,
       visitTitle: entry.title,
       scheduledAt: entry.scheduledAt,
       notificationId: notificationId,

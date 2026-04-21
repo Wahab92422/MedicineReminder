@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 
 import '../../services/meal_reminder_notification_helper.dart';
 import 'meal_entry.dart';
+import 'meal_statuses.dart';
 
 class MealWriteResponse {
   const MealWriteResponse.success(this.entryId, {this.isQueuedForSync = false})
@@ -261,6 +262,31 @@ class MealRepository {
         .get()
         .timeout(_readTimeout);
     return snap.docs.map(MealEntry.fromFirestore).toList();
+  }
+
+  Future<MealEntry?> getEntry({
+    required String userId,
+    required String entryId,
+  }) async {
+    final snap =
+        await _meals(userId).doc(entryId).get().timeout(_readTimeout);
+    if (!snap.exists) return null;
+    return MealEntry.fromFirestore(snap);
+  }
+
+  /// Status [MealStatuses.scheduled] only; sorted by [mealAt] soonest first.
+  Future<List<MealEntry>> listScheduledEntries({
+    required String userId,
+    int limit = 200,
+  }) async {
+    final snap = await _meals(userId)
+        .where('status', isEqualTo: MealStatuses.scheduled)
+        .get()
+        .timeout(_readTimeout);
+    final list = snap.docs.map(MealEntry.fromFirestore).toList()
+      ..sort((a, b) => a.mealAt.compareTo(b.mealAt));
+    if (list.length <= limit) return list;
+    return list.take(limit).toList();
   }
 
   static String _safeFileName(String name) {

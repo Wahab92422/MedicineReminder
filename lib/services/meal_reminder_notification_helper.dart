@@ -25,6 +25,7 @@ class MealReminderNotificationHelper {
     final label = entry.mealType.trim().isEmpty ? 'meal' : entry.mealType.trim();
     await _notificationService.ensureNotificationPermissions();
     await _notificationService.scheduleMealScheduledReminder(
+      mealId: entry.id,
       mealTypeLabel: label,
       mealAt: entry.mealAt,
       notificationId: notificationId,

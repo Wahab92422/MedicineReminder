@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import '../../services/appointment_notification_helper.dart';
 import 'appointment_entry.dart';
+import 'appointment_statuses.dart';
 
 class AppointmentWriteResponse {
   const AppointmentWriteResponse.success(
@@ -249,5 +250,30 @@ class AppointmentRepository {
         .get()
         .timeout(_readTimeout);
     return snap.docs.map(AppointmentEntry.fromFirestore).toList();
+  }
+
+  Future<AppointmentEntry?> getEntry({
+    required String userId,
+    required String entryId,
+  }) async {
+    final snap =
+        await _appointments(userId).doc(entryId).get().timeout(_readTimeout);
+    if (!snap.exists) return null;
+    return AppointmentEntry.fromFirestore(snap);
+  }
+
+  /// Status [AppointmentStatuses.scheduled] only; sorted by [scheduledAt] soonest first.
+  Future<List<AppointmentEntry>> listScheduledEntries({
+    required String userId,
+    int limit = 200,
+  }) async {
+    final snap = await _appointments(userId)
+        .where('status', isEqualTo: AppointmentStatuses.scheduled)
+        .get()
+        .timeout(_readTimeout);
+    final list = snap.docs.map(AppointmentEntry.fromFirestore).toList()
+      ..sort((a, b) => a.scheduledAt.compareTo(b.scheduledAt));
+    if (list.length <= limit) return list;
+    return list.take(limit).toList();
   }
 }

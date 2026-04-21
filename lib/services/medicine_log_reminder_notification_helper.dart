@@ -26,6 +26,7 @@ class MedicineLogReminderNotificationHelper {
         entry.medicineName.trim().isEmpty ? 'medicine' : entry.medicineName.trim();
     await _notificationService.ensureNotificationPermissions();
     await _notificationService.scheduleMedicineDoseScheduledReminder(
+      logId: entry.id,
       medicineName: name,
       loggedAt: entry.loggedAt,
       notificationId: notificationId,
