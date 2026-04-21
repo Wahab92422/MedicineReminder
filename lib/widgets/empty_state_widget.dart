@@ -49,6 +49,10 @@ class EmptyStateWidget extends StatelessWidget {
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: AppSpacing.lg),
               FilledButton.tonalIcon(
+                style: FilledButton.styleFrom(
+                  minimumSize: const Size(0, 48),
+                  tapTargetSize: MaterialTapTargetSize.padded,
+                ),
                 onPressed: onAction,
                 icon: const Icon(Icons.add_rounded),
                 label: Text(actionLabel!),

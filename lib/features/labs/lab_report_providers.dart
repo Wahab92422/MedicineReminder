@@ -241,7 +241,6 @@ class LabReportsListNotifier extends Notifier<LabReportsListUiState> {
         reportId: report.id,
         attachmentUrls: report.attachments.map((e) => e.url).toList(),
       );
-      debugPrint('Lab report delete response: $res');
       if (!res.success) {
         state = state.copyWith(
           clearDeleting: true,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../theme/app_spacing.dart';
 
@@ -15,6 +16,7 @@ class CustomTextField extends StatelessWidget {
     this.onSubmitted,
     this.autocorrect = true,
     this.readOnly = false,
+    this.inputFormatters,
   });
 
   final TextEditingController? controller;
@@ -26,12 +28,14 @@ class CustomTextField extends StatelessWidget {
   final ValueChanged<String>? onSubmitted;
   final bool autocorrect;
   final bool readOnly;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
     return TextField(
       controller: controller,
       readOnly: readOnly,
+      inputFormatters: inputFormatters,
       maxLines: maxLines,
       keyboardType: maxLines > 1
           ? TextInputType.multiline

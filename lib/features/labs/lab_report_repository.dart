@@ -140,7 +140,6 @@ class LabReportRepository {
       action: 'create',
       reportId: report.id,
       operation: () async {
-        debugPrint('Firestore create request for ${report.id}: $createPayload');
         await _reports(
           userId,
         ).doc(report.id).set(createPayload).timeout(_writeTimeout);
@@ -182,13 +181,10 @@ class LabReportRepository {
       action: 'update',
       reportId: report.id,
       operation: () async {
-        debugPrint('Firestore update request for ${report.id}: $updatePayload');
-        debugPrint('Firestore update write started for ${report.id}');
         await _reports(userId)
             .doc(report.id)
             .set(updatePayload, SetOptions(merge: true))
             .timeout(_writeTimeout);
-        debugPrint('Firestore update write finished for ${report.id}');
       },
       verifyOnServer: () =>
           _verifyUpdatedReport(userId: userId, report: report),
@@ -219,7 +215,6 @@ class LabReportRepository {
       action: 'delete',
       reportId: reportId,
       operation: () async {
-        debugPrint('Firestore delete request for $reportId');
         for (final url in attachmentUrls) {
           await deleteStoredFile(url);
         }
@@ -255,18 +250,13 @@ class LabReportRepository {
     Future<void> Function()? onAfterTimeout,
   }) async {
     try {
-      debugPrint('Firestore $action operation entered for $reportId');
       await operation();
-      debugPrint('Firestore $action operation completed for $reportId');
       await onAfterSuccess?.call();
       return LabReportWriteResponse.success(reportId);
     } on TimeoutException catch (error) {
       final cacheVerified = await verifyInCache();
       final serverVerified = cacheVerified ? false : await verifyOnServer();
       await onAfterTimeout?.call();
-      debugPrint(
-        'Firestore $action timed out for $reportId; cacheVerified=$cacheVerified, serverVerified=$serverVerified',
-      );
       if (cacheVerified) {
         return LabReportWriteResponse.success(reportId, isQueuedForSync: true);
       }
@@ -278,15 +268,11 @@ class LabReportRepository {
         error.message ?? error.toString(),
       );
     } on FirebaseException catch (error) {
-      debugPrint(
-        'Firestore $action FirebaseException for $reportId: code=${error.code}, message=${error.message}',
-      );
       return LabReportWriteResponse.failure(
         reportId,
         error.message ?? 'Firestore $action failed.',
       );
     } catch (error) {
-      debugPrint('Firestore $action error for $reportId: $error');
       return LabReportWriteResponse.failure(reportId, error.toString());
     }
   }
@@ -376,34 +362,7 @@ class LabReportRepository {
     required String userId,
     required String reportId,
     required String action,
-  }) async {
-    try {
-      final snap = await _reports(userId)
-          .doc(reportId)
-          .get(const GetOptions(source: Source.server))
-          .timeout(_verifyTimeout);
-      debugPrint(
-        'Firestore $action server snapshot for $reportId: exists=${snap.exists}, data=${snap.data()}',
-      );
-    } catch (e) {
-      debugPrint(
-        'Firestore $action server snapshot fetch failed for $reportId: $e',
-      );
-    }
-    try {
-      final snap = await _reports(userId)
-          .doc(reportId)
-          .get(const GetOptions(source: Source.cache))
-          .timeout(_verifyTimeout);
-      debugPrint(
-        'Firestore $action cache snapshot for $reportId: exists=${snap.exists}, data=${snap.data()}',
-      );
-    } catch (e) {
-      debugPrint(
-        'Firestore $action cache snapshot fetch failed for $reportId: $e',
-      );
-    }
-  }
+  }) async {}
 
   Future<String> uploadAttachment({
     required String userId,

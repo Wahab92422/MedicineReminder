@@ -6,6 +6,7 @@ import '../features/labs/lab_report.dart';
 import '../features/labs/lab_report_providers.dart';
 import '../features/labs/lab_report_types.dart';
 import '../theme/app_spacing.dart';
+import '../widgets/app_screen_header.dart';
 import '../widgets/custom_dropdown.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
@@ -90,7 +91,6 @@ class _AddUpdateLabReportScreenState
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
 
-    debugPrint('Lab report save started. isEdit=$_isEdit');
     setState(() => _saving = true);
     try {
       final repo = ref.read(labReportRepositoryProvider);
@@ -104,7 +104,6 @@ class _AddUpdateLabReportScreenState
 
       final uploaded = <LabAttachment>[];
       for (final p in _newAttachments) {
-        debugPrint('Uploading attachment started: ${p.displayName}');
         final url = await repo.uploadAttachment(
           userId: uid,
           reportId: reportId,
@@ -112,7 +111,6 @@ class _AddUpdateLabReportScreenState
           bytes: p.bytes,
           contentType: p.mimeType,
         );
-        debugPrint('Uploading attachment finished: ${p.displayName}');
         uploaded.add(LabAttachment(url: url, type: p.mimeType));
       }
 
@@ -132,24 +130,11 @@ class _AddUpdateLabReportScreenState
       );
 
       for (final url in _removedRemoteUrls) {
-        debugPrint('Deleting removed attachment started: $url');
         await repo.deleteStoredFile(url);
-        debugPrint('Deleting removed attachment finished: $url');
       }
-
-      debugPrint(
-        'Firestore ${_isEdit ? 'update' : 'create'} started for reportId=$reportId',
-      );
       final result = _isEdit
           ? await repo.updateReport(userId: uid, report: report)
           : await repo.createReport(userId: uid, report: report);
-      debugPrint(
-        'Firestore ${_isEdit ? 'update' : 'create'} finished for reportId=$reportId',
-      );
-
-      debugPrint(
-        'Lab report ${_isEdit ? 'update' : 'create'} response: $result',
-      );
 
       if (!result.success) {
         _showSaveFailure(
@@ -160,9 +145,6 @@ class _AddUpdateLabReportScreenState
       }
 
       if (!mounted) return;
-      debugPrint(
-        'Success snackbar + navigation starting for reportId=$reportId',
-      );
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -176,13 +158,11 @@ class _AddUpdateLabReportScreenState
       );
       Navigator.of(context).pop(true);
     } catch (e) {
-      debugPrint('Lab report save catch block hit: $e');
       if (!mounted) return;
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Could not save: $e')));
     } finally {
-      debugPrint('Lab report save finally block. mounted=$mounted');
       if (mounted) setState(() => _saving = false);
     }
   }
@@ -197,8 +177,12 @@ class _AddUpdateLabReportScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isEdit ? 'Edit lab report' : 'Add lab report'),
+      appBar: AppScreenHeader(
+        title: _isEdit ? 'Edit Lab Report' : 'Add Lab Report',
+        subtitle: _isEdit
+            ? 'Update report details, dates, or attachments.'
+            : 'Store a new report with dates and supporting files.',
+        icon: _isEdit ? Icons.edit_document : Icons.note_add_outlined,
       ),
       body: Stack(
         children: [

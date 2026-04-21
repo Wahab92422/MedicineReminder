@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Centered loading indicator for full regions or overlays.
+/// Centered loading indicator for small overlays (e.g. dialogs).
+/// For list screens prefer [ListLoadingSkeleton].
 class LoadingWidget extends StatelessWidget {
   const LoadingWidget({super.key, this.message});
 

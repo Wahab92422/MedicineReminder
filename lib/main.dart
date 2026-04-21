@@ -2,12 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'screens/auth_gate.dart';
+import 'screens/app_splash_screen.dart';
+import 'services/notification_service.dart';
 import 'theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+
+  // Initialize notification service
+  await NotificationService().initialize();
 
   runApp(const ProviderScope(child: MedicineApp()));
 }
@@ -20,7 +24,7 @@ class MedicineApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
-      home: const AuthGate(),
+      home: const AppSplashScreen(),
     );
   }
 }

@@ -31,15 +31,21 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _busy = true);
     try {
       if (_isLogin) {
-        await auth.login(_emailController.text.trim(), _passwordController.text);
+        await auth.login(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
       } else {
-        await auth.signUp(_emailController.text.trim(), _passwordController.text);
+        await auth.signUp(
+          _emailController.text.trim(),
+          _passwordController.text,
+        );
       }
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -71,26 +77,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: AppSpacing.md),
-                    Icon(
-                      Icons.local_hospital_rounded,
-                      size: 56,
-                      color: scheme.primary,
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      'Medicine App',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            fontWeight: FontWeight.bold,
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusXl,
+                        ),
+                        gradient: LinearGradient(
+                          colors: [
+                            scheme.surface.withValues(alpha: 0.86),
+                            scheme.primary.withValues(alpha: 0.08),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.local_hospital_rounded,
+                            size: 56,
+                            color: scheme.primary,
                           ),
-                    ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Text(
-                      'Sign in to continue. Rebuild features from this base.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: scheme.onSurfaceVariant,
+                          const SizedBox(height: AppSpacing.md),
+                          Text(
+                            'Medicine App',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(fontWeight: FontWeight.bold),
                           ),
+                          const SizedBox(height: AppSpacing.xs),
+                          Text(
+                            'Your lab reports and vitals, organized in one calm place.',
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: scheme.onSurfaceVariant),
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.xl),
                     Card(
@@ -101,9 +125,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                           children: [
                             Text(
                               _isLogin ? 'Sign in' : 'Create account',
-                              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                              style: Theme.of(context).textTheme.titleLarge
+                                  ?.copyWith(fontWeight: FontWeight.w600),
                             ),
                             const SizedBox(height: AppSpacing.lg),
                             AppTextField(
