@@ -8,6 +8,7 @@ import '../features/schedule/unified_schedule_item.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/empty_state_widget.dart';
+import '../widgets/skeleton_placeholders.dart';
 import 'add_schedule_reminder_sheet.dart';
 import 'add_update_appointment_screen.dart';
 import 'add_update_meal_screen.dart';
@@ -188,7 +189,14 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
         label: const Text('Reminder'),
       ),
       body: monthAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => const ListLoadingSkeleton(
+          padding: EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            AppSpacing.sm,
+            AppSpacing.md,
+            96,
+          ),
+        ),
         error: (e, _) => Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.lg),

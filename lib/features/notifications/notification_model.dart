@@ -6,11 +6,11 @@ extension NotificationTypeExtension on NotificationType {
   String get displayName {
     switch (this) {
       case NotificationType.lowStock:
-        return 'Low Stock';
+        return 'Low stock';
       case NotificationType.expiringSoon:
-        return 'Expiring Soon';
+        return 'Expires soon';
       case NotificationType.expired:
-        return 'Expired';
+        return 'Past expiry';
     }
   }
 

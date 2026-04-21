@@ -5,6 +5,7 @@ import '../features/medicine_inventory/medicine_entry.dart';
 import '../features/notifications/notification_model.dart';
 import '../features/notifications/notification_repository.dart';
 import '../services/notification_service.dart';
+import '../utils/app_date_time_format.dart';
 
 class MedicineNotificationHelper {
   static final MedicineNotificationHelper _instance =
@@ -68,9 +69,9 @@ class MedicineNotificationHelper {
           id: notificationId,
           userId: userId,
           type: NotificationType.lowStock,
-          title: 'Medicine Low Stock Alert',
+          title: 'Low stock: ${medicine.name}',
           message:
-              '${medicine.name} is running low. Current stock: ${medicine.quantity} (Threshold: ${medicine.lowStockThreshold})',
+              'You have ${medicine.quantity} left. Alert level is ${medicine.lowStockThreshold}. Restock soon.',
           medicineId: medicine.id,
           medicineName: medicine.name,
           createdAt: DateTime.now(),
@@ -101,21 +102,21 @@ class MedicineNotificationHelper {
 
     if (medicine.isExpired) {
       notificationType = NotificationType.expired;
-      title = 'Medicine Expired';
+      title = 'Expired: ${medicine.name}';
       message =
-          '${medicine.name} has expired (${_formatDate(medicine.expiryDate)})';
+          'Past expiry on the label (${_formatDate(medicine.expiryDate)}). Do not use without clinician guidance.';
       daysUntilExpiry = 0;
     } else {
       notificationType = NotificationType.expiringSoon;
       daysUntilExpiry = medicine.expiryDate.difference(DateTime.now()).inDays;
       if (daysUntilExpiry == 1) {
-        title = 'Medicine Expires Tomorrow';
+        title = 'Expires tomorrow: ${medicine.name}';
         message =
-            '${medicine.name} expires tomorrow (${_formatDate(medicine.expiryDate)})';
+            'Expiry on label: ${_formatDate(medicine.expiryDate)}. Plan a refill today.';
       } else {
-        title = 'Medicine Expiring Soon';
+        title = 'Expiring in $daysUntilExpiry days: ${medicine.name}';
         message =
-            '${medicine.name} expires in $daysUntilExpiry days (${_formatDate(medicine.expiryDate)})';
+            'Expiry on label: ${_formatDate(medicine.expiryDate)}. Reorder before you run out.';
       }
     }
 
@@ -185,7 +186,5 @@ class MedicineNotificationHelper {
     await _notificationService.cancelNotification(notificationId);
   }
 
-  String _formatDate(DateTime date) {
-    return '${date.month}/${date.day}/${date.year}';
-  }
+  String _formatDate(DateTime date) => AppDateTimeFormat.formatDate(date);
 }

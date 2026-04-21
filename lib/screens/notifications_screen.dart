@@ -7,6 +7,7 @@ import '../features/notifications/notification_model.dart';
 import '../features/notifications/notification_providers.dart';
 import '../services/medicine_notification_helper.dart';
 import '../theme/app_spacing.dart';
+import '../utils/app_date_time_format.dart';
 import '../widgets/app_screen_header.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/skeleton_placeholders.dart';
@@ -25,7 +26,11 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   Future<void> _syncMedicineAlertsToFirestore(String uid) async {
     if (uid.isEmpty) return;
     try {
-      final all = await ref.read(allMedicinesStreamProvider(uid).future);
+      final repo = ref.read(medicineRepositoryProvider);
+      final all = await repo
+          .watchAllMedicinesOrderedByName(userId: uid)
+          .first
+          .timeout(const Duration(seconds: 60));
       if (all.isEmpty) return;
       await MedicineNotificationHelper().checkAndCreateNotifications(all);
     } catch (e, st) {
@@ -159,9 +164,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     height: MediaQuery.sizeOf(context).height * 0.45,
                     child: EmptyStateWidget(
                       icon: Icons.notifications_off_rounded,
-                      title: 'No notifications yet',
+                      title: 'No alerts yet',
                       subtitle:
-                          'You\'ll receive notifications for medicine alerts here.',
+                          'Medicine stock and expiry alerts will show up here.',
                       actionLabel: 'Refresh',
                       onAction: () => _refresh(uid),
                     ),
@@ -233,7 +238,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                     child: Text(
                       unreadCount == 0
                           ? 'All caught up!'
-                          : '$unreadCount unread notification${unreadCount == 1 ? '' : 's'}',
+                          : '$unreadCount unread alert${unreadCount == 1 ? '' : 's'}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context)
                                 .colorScheme
@@ -352,7 +357,9 @@ class NotificationCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          _formatDate(notification.createdAt),
+                          AppDateTimeFormat.formatShortRelativeWithTime(
+                            notification.createdAt,
+                          ),
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                                 color: colorScheme.onSurfaceVariant,
                               ),
@@ -401,20 +408,5 @@ class NotificationCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
-
-    if (difference.inDays == 0) {
-      return 'Today ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return '${date.month}/${date.day}/${date.year}';
-    }
   }
 }

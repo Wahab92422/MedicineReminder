@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/foundation.dart';
 
+import 'firestore_batch_limits.dart';
 import 'notification_model.dart';
 
 class NotificationRepository {
@@ -62,9 +63,9 @@ class NotificationRepository {
   Future<List<AppNotification>> getUnreadNotifications({
     required String userId,
   }) async {
+    // Equality-only filter (no orderBy) so no composite index is required.
     final snap = await _notifications(userId)
         .where('isRead', isEqualTo: false)
-        .orderBy('createdAt', descending: true)
         .get()
         .timeout(_readTimeout);
 
@@ -90,16 +91,26 @@ class NotificationRepository {
   }
 
   Future<void> markAllAsRead({required String userId}) async {
-    final batch = _firestore.batch();
-    final unreadNotifications = await getUnreadNotifications(userId: userId);
+    final snap = await _notifications(userId)
+        .where('isRead', isEqualTo: false)
+        .get()
+        .timeout(_readTimeout);
 
-    for (final notification in unreadNotifications) {
-      batch.update(_notifications(userId).doc(notification.id), {
-        'isRead': true,
-      });
+    if (snap.docs.isEmpty) {
+      return;
     }
 
-    await batch.commit().timeout(_writeTimeout);
+    final docs = snap.docs;
+    for (var i = 0; i < docs.length; i += kFirestoreMaxBatchWrites) {
+      final batch = _firestore.batch();
+      final end = (i + kFirestoreMaxBatchWrites > docs.length)
+          ? docs.length
+          : i + kFirestoreMaxBatchWrites;
+      for (var j = i; j < end; j++) {
+        batch.update(docs[j].reference, {'isRead': true});
+      }
+      await batch.commit().timeout(_writeTimeout);
+    }
   }
 
   Future<void> deleteNotification({

@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:medicine_app/services/notification_android_schedule_mode.dart';
 import 'package:medicine_app/services/notification_schedule_instant.dart';
+import 'package:medicine_app/utils/app_date_time_format.dart';
 import 'package:timezone/data/latest.dart' as tzdata;
 
 /// Local notifications (scheduled + immediate) for medicine alerts.
@@ -251,9 +252,9 @@ class NotificationService {
     try {
       await _flutterLocalNotificationsPlugin.show(
         id: id,
-        title: 'Medicine Low Stock Alert',
+        title: 'Low stock: $medicineName',
         body:
-            '$medicineName is running low. Current stock: $currentQuantity (Threshold: $threshold)',
+            'You have $currentQuantity left. We will remind you again if stock reaches $threshold.',
         notificationDetails: notificationDetails,
         payload: 'low_stock_$medicineName',
       );
@@ -290,14 +291,16 @@ class NotificationService {
     late final String body;
 
     if (daysUntilExpiry <= 0) {
-      title = 'Medicine Expired';
-      body = '$medicineName has expired (Expired: $expiryDate)';
+      title = 'Expired: $medicineName';
+      body =
+          'This item is past its expiry date ($expiryDate). Check with your clinician before using it.';
     } else if (daysUntilExpiry == 1) {
-      title = 'Medicine Expires Tomorrow';
-      body = '$medicineName expires tomorrow ($expiryDate)';
+      title = 'Expires tomorrow: $medicineName';
+      body = 'Expiry date on the label: $expiryDate. Plan a refill or replacement.';
     } else {
-      title = 'Medicine Expiring Soon';
-      body = '$medicineName expires in $daysUntilExpiry days ($expiryDate)';
+      title = 'Expiring in $daysUntilExpiry days: $medicineName';
+      body =
+          'Expiry date on the label: $expiryDate. Consider reordering so you do not run out.';
     }
 
     final id = DateTime.now().millisecondsSinceEpoch ~/ 1000;
@@ -352,9 +355,10 @@ class NotificationService {
     try {
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         id: notificationId,
-        title: 'Medicine Expiry Reminder',
+        title: 'Expiry heads-up: $medicineName',
         body:
-            '$medicineName expires on ${expiryDate.toString().split(' ')[0]}. Please check and replace if needed.',
+            'Expires on ${AppDateTimeFormat.formatDate(expiryDate.toLocal())}. '
+            'Check your supply and plan a refill if needed.',
         scheduledDate: tzUtcInstantForSchedule(notificationTime),
         notificationDetails: notificationDetails,
         androidScheduleMode: _androidReminderScheduleMode,
@@ -401,21 +405,19 @@ class NotificationService {
     try {
       final when = _formatUserDateTime(scheduledAt);
       final buffer = StringBuffer()
-        ..writeln('You asked to be reminded about this visit.')
-        ..writeln()
-        ..writeln('When: $when');
+        ..writeln('Time: $when');
       if (doctorName != null && doctorName.trim().isNotEmpty) {
-        buffer.writeln('Doctor: ${doctorName.trim()}');
+        buffer.writeln('Provider: ${doctorName.trim()}');
       }
       if (location != null && location.trim().isNotEmpty) {
-        buffer.writeln('Where: ${location.trim()}');
+        buffer.writeln('Place: ${location.trim()}');
       }
       buffer.writeln();
-      buffer.write('Open the app to view or edit this appointment.');
+      buffer.write('Tap to open the app and review this visit.');
 
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         id: notificationId,
-        title: 'Upcoming appointment: $visitTitle',
+        title: 'Appointment: $visitTitle',
         body: buffer.toString(),
         scheduledDate: tzUtcInstantForSchedule(scheduledAt),
         notificationDetails: notificationDetails,
@@ -460,9 +462,9 @@ class NotificationService {
     try {
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         id: notificationId,
-        title: 'Meal reminder',
+        title: 'Meal: $mealTypeLabel',
         body:
-            'Reminder: your $mealTypeLabel is planned for $when.$detail\n\nOpen the app to log or change this meal.',
+            'Planned for $when.$detail\n\nOpen the app to log the meal or adjust the time.',
         scheduledDate: tzUtcInstantForSchedule(mealAt),
         notificationDetails: _detailsWithDarwin(android: android),
         androidScheduleMode: _androidReminderScheduleMode,
@@ -506,9 +508,9 @@ class NotificationService {
     try {
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         id: notificationId,
-        title: 'Medicine reminder',
+        title: 'Dose: $medicineName',
         body:
-            'Reminder: take $medicineName around $when.$detail\n\nOpen the app to log this dose when you take it.',
+            'Scheduled around $when.$detail\n\nOpen the app to mark the dose as taken when you are ready.',
         scheduledDate: tzUtcInstantForSchedule(loggedAt),
         notificationDetails: _detailsWithDarwin(android: android),
         androidScheduleMode: _androidReminderScheduleMode,
@@ -519,14 +521,8 @@ class NotificationService {
     }
   }
 
-  String _formatUserDateTime(DateTime d) {
-    final x = d.toLocal();
-    final date =
-        '${x.year}-${x.month.toString().padLeft(2, '0')}-${x.day.toString().padLeft(2, '0')}';
-    final time =
-        '${x.hour.toString().padLeft(2, '0')}:${x.minute.toString().padLeft(2, '0')}';
-    return '$date at $time';
-  }
+  String _formatUserDateTime(DateTime d) =>
+      AppDateTimeFormat.formatDateTime(d);
 
   /// User-created reminders from the Schedule screen (general type only in UI).
   Future<void> scheduleAgendaReminder({
@@ -565,13 +561,13 @@ class NotificationService {
     try {
       final when = _formatUserDateTime(scheduledAt);
       final noteLine = notes != null && notes.trim().isNotEmpty
-          ? '\n\nDetails: ${notes.trim()}'
+          ? '\n\nNote: ${notes.trim()}'
           : '';
       await _flutterLocalNotificationsPlugin.zonedSchedule(
         id: notificationId,
-        title: 'Reminder: $title',
+        title: title,
         body:
-            'Type: $kindLabel\nWhen: $when$noteLine\n\nOpen the app to manage schedule reminders.',
+            '$kindLabel · $when$noteLine\n\nOpen the app to view or change this reminder.',
         scheduledDate: tzUtcInstantForSchedule(scheduledAt),
         notificationDetails: notificationDetails,
         androidScheduleMode: _androidReminderScheduleMode,
