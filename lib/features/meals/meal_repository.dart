@@ -268,8 +268,7 @@ class MealRepository {
     required String userId,
     required String entryId,
   }) async {
-    final snap =
-        await _meals(userId).doc(entryId).get().timeout(_readTimeout);
+    final snap = await _meals(userId).doc(entryId).get().timeout(_readTimeout);
     if (!snap.exists) return null;
     return MealEntry.fromFirestore(snap);
   }

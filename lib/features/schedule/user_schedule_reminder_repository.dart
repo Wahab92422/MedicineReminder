@@ -60,8 +60,7 @@ class UserScheduleReminderRepository {
     required String userId,
     required String reminderId,
   }) async {
-    final snap =
-        await _col(userId).doc(reminderId).get().timeout(_readTimeout);
+    final snap = await _col(userId).doc(reminderId).get().timeout(_readTimeout);
     if (!snap.exists) return null;
     return UserScheduleReminder.fromFirestore(snap);
   }
@@ -87,10 +86,13 @@ class UserScheduleReminderRepository {
     required String reminderId,
     required String outcome,
   }) async {
-    await _col(userId).doc(reminderId).update({
-      'reminderOutcome': outcome,
-      'updatedAt': FieldValue.serverTimestamp(),
-    }).timeout(_writeTimeout);
+    await _col(userId)
+        .doc(reminderId)
+        .update({
+          'reminderOutcome': outcome,
+          'updatedAt': FieldValue.serverTimestamp(),
+        })
+        .timeout(_writeTimeout);
     await UserScheduleReminderNotificationHelper().cancelReminder(reminderId);
   }
 }

@@ -13,6 +13,7 @@ import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
 import '../widgets/lab_attachment_picker.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/speech_text_field.dart';
 
 /// Create or edit a prescription record (Firestore + Storage).
 class AddUpdatePrescriptionScreen extends ConsumerStatefulWidget {
@@ -217,7 +218,7 @@ class _AddUpdatePrescriptionScreenState
                 textInputAction: TextInputAction.next,
               ),
               const SizedBox(height: AppSpacing.md),
-              CustomTextField(
+              SpeechTextField(
                 controller: _descriptionController,
                 label: 'Notes',
                 maxLines: 4,

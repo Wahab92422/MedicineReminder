@@ -21,6 +21,7 @@ class AppointmentEntry {
   final String status;
   final String notes;
   final String location;
+
   /// Care provider name (optional).
   final String doctor;
   final DateTime createdAt;
@@ -43,7 +44,9 @@ class AppointmentEntry {
       id: id,
       title: map['title'] as String? ?? '',
       scheduledAt: _readTs(map['scheduledAt']),
-      status: AppointmentStatuses.normalizeFromStorage(map['status'] as String?),
+      status: AppointmentStatuses.normalizeFromStorage(
+        map['status'] as String?,
+      ),
       notes: map['notes'] as String? ?? '',
       location: map['location'] as String? ?? '',
       doctor: map['doctor'] as String? ?? '',

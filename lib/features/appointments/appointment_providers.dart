@@ -18,8 +18,8 @@ final appointmentRepositoryProvider = Provider<AppointmentRepository>(
 
 final appointmentsListProvider =
     NotifierProvider<AppointmentsListNotifier, AppointmentsListUiState>(
-  AppointmentsListNotifier.new,
-);
+      AppointmentsListNotifier.new,
+    );
 
 @immutable
 class AppointmentsListUiState {

@@ -15,6 +15,7 @@ import '../widgets/custom_dropdown.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/speech_text_field.dart';
 
 class AddUpdateMedicineScreen extends ConsumerStatefulWidget {
   const AddUpdateMedicineScreen({super.key, this.existing});
@@ -365,7 +366,7 @@ class _AddUpdateMedicineScreenState
                 onDateSelected: (d) => setState(() => _expiryDate = d),
               ),
               const SizedBox(height: AppSpacing.md),
-              CustomTextField(
+              SpeechTextField(
                 controller: _notesController,
                 label: 'Notes',
                 hint: 'Any additional information',
@@ -375,9 +376,9 @@ class _AddUpdateMedicineScreenState
               const SizedBox(height: AppSpacing.lg),
               Text(
                 'Attachment (optional)',
-                style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: AppSpacing.sm),
               OutlinedButton.icon(
@@ -413,9 +414,9 @@ class _AddUpdateMedicineScreenState
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) => Container(
                       height: 180,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .surfaceContainerHighest,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.surfaceContainerHighest,
                       alignment: Alignment.center,
                       child: Icon(
                         Icons.image_not_supported_outlined,
@@ -428,8 +429,8 @@ class _AddUpdateMedicineScreenState
                 Text(
                   'No attachment selected.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               const SizedBox(height: AppSpacing.lg),
               PrimaryButton(

@@ -9,6 +9,7 @@ import '../widgets/app_screen_header.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/speech_text_field.dart';
 
 class AddUpdateClinicalNoteScreen extends ConsumerStatefulWidget {
   const AddUpdateClinicalNoteScreen({super.key, this.existing});
@@ -155,7 +156,7 @@ class _AddUpdateClinicalNoteScreenState
             onDateSelected: (d) => setState(() => _notedAt = d),
           ),
           const SizedBox(height: AppSpacing.md),
-          CustomTextField(
+          SpeechTextField(
             controller: _bodyController,
             label: 'Notes',
             hint: 'Symptoms, plan, medications discussed…',

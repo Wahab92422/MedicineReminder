@@ -6,5 +6,6 @@ int firestoreBatchCommitCount(int operationCount) {
   if (operationCount <= 0) {
     return 0;
   }
-  return (operationCount + kFirestoreMaxBatchWrites - 1) ~/ kFirestoreMaxBatchWrites;
+  return (operationCount + kFirestoreMaxBatchWrites - 1) ~/
+      kFirestoreMaxBatchWrites;
 }

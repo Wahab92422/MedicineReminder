@@ -1,10 +1,5 @@
 /// User-created schedule reminder category (stored as string in Firestore).
-enum ScheduleReminderKind {
-  meal,
-  medicine,
-  appointment,
-  general,
-}
+enum ScheduleReminderKind { meal, medicine, appointment, general }
 
 extension ScheduleReminderKindX on ScheduleReminderKind {
   String get wireValue {

@@ -59,9 +59,9 @@ class _MedicineLogsScreenState extends ConsumerState<MedicineLogsScreen> {
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not delete: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not delete: $e')));
       }
     } finally {
       if (mounted) setState(() => _deletingEntryId = null);
@@ -91,8 +91,8 @@ class _MedicineLogsScreenState extends ConsumerState<MedicineLogsScreen> {
                   Text(
                     'Filter logs',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   DropdownButtonFormField<String?>(
@@ -296,7 +296,12 @@ class _MedicineLogsScreenState extends ConsumerState<MedicineLogsScreen> {
 
         return ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, 88),
+          padding: const EdgeInsets.fromLTRB(
+            AppSpacing.md,
+            0,
+            AppSpacing.md,
+            88,
+          ),
           itemCount: filteredItems.length,
           itemBuilder: (context, index) {
             final item = filteredItems[index];
@@ -352,18 +357,18 @@ class _MedicineLogsOverviewCard extends StatelessWidget {
         children: [
           Text(
             'Track doses from inventory',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             entryCount == 0
                 ? 'Add a log to record taken, missed, or scheduled doses.'
                 : '$entryCount log${entryCount == 1 ? '' : 's'}. Taken doses update inventory automatically.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),

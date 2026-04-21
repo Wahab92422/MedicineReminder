@@ -102,9 +102,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         title: const Text('Delete reminder?'),
-        content: Text(
-          'Remove “${r.title}” and cancel its notification.',
-        ),
+        content: Text('Remove “${r.title}” and cancel its notification.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -118,10 +116,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
       ),
     );
     if (ok == true && mounted) {
-      await ref.read(userScheduleReminderRepositoryProvider).deleteReminder(
-            userId: uid,
-            reminderId: r.id,
-          );
+      await ref
+          .read(userScheduleReminderRepositoryProvider)
+          .deleteReminder(userId: uid, reminderId: r.id);
       if (mounted) _refreshMonth();
     }
   }
@@ -136,12 +133,13 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
       appBar: AppBar(title: const Text('Schedule')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final result = await showModalBottomSheet<ScheduleReminderSheetResult?>(
-            context: context,
-            isScrollControlled: true,
-            showDragHandle: true,
-            builder: (_) => const AddScheduleReminderSheet(),
-          );
+          final result =
+              await showModalBottomSheet<ScheduleReminderSheetResult?>(
+                context: context,
+                isScrollControlled: true,
+                showDragHandle: true,
+                builder: (_) => const AddScheduleReminderSheet(),
+              );
           if (!context.mounted || result == null) return;
 
           if (result is ScheduleReminderGeneralSaved) {
@@ -251,9 +249,9 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
               const SizedBox(height: AppSpacing.lg),
               Text(
                 loc.formatMediumDate(_selectedDay),
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: AppSpacing.sm),
               if (dayItems.isEmpty)
@@ -268,10 +266,7 @@ class _ScheduleScreenState extends ConsumerState<ScheduleScreen> {
                 )
               else
                 ...dayItems.map(
-                  (e) => _ScheduleItemTile(
-                    item: e,
-                    onTap: () => _openItem(e),
-                  ),
+                  (e) => _ScheduleItemTile(item: e, onTap: () => _openItem(e)),
                 ),
             ],
           );
@@ -307,9 +302,9 @@ class _MonthHeader extends StatelessWidget {
           child: Text(
             label,
             textAlign: TextAlign.center,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
         ),
         IconButton(

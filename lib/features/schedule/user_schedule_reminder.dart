@@ -40,7 +40,8 @@ class UserScheduleReminder {
   }
 
   factory UserScheduleReminder.fromMap(String id, Map<String, dynamic> map) {
-    final kind = parseScheduleReminderKind(map['kind'] as String?) ??
+    final kind =
+        parseScheduleReminderKind(map['kind'] as String?) ??
         ScheduleReminderKind.general;
     return UserScheduleReminder(
       id: id,

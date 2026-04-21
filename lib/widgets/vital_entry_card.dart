@@ -4,6 +4,9 @@ import '../features/vitals/vital_entry.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 
+/// How many readings to show on the list card; the rest open on the detail screen.
+const int _kVitalsCardPreviewMetricCount = 2;
+
 class VitalEntryCard extends StatelessWidget {
   const VitalEntryCard({
     super.key,
@@ -24,93 +27,189 @@ class VitalEntryCard extends StatelessWidget {
     final scheme = theme.colorScheme;
     final loc = MaterialLocalizations.of(context);
 
+    final hasNotes = entry.notes.trim().isNotEmpty;
+    var metrics = _buildMetricTiles(entry);
+    if (_isPlaceholderNotesOnly(metrics) && hasNotes) {
+      metrics = <_MetricSpec>[];
+    }
+    final previewMetrics = metrics.take(_kVitalsCardPreviewMetricCount).toList();
+    final extraMetrics = metrics.length > _kVitalsCardPreviewMetricCount
+        ? metrics.skip(_kVitalsCardPreviewMetricCount).toList()
+        : const <_MetricSpec>[];
+    final recordedLine =
+        '${loc.formatMediumDate(entry.recordedAt)} • ${loc.formatTimeOfDay(TimeOfDay.fromDateTime(entry.recordedAt))}';
+
     return Card(
-      margin: const EdgeInsets.only(bottom: AppSpacing.sm),
+      margin: const EdgeInsets.only(bottom: AppSpacing.xs),
       elevation: 0,
       color: Colors.transparent,
       child: InkWell(
         onTap: isDeleting ? null : onTap,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         child: Container(
           decoration: BoxDecoration(
             color: Color.lerp(scheme.surface, scheme.primary, 0.02),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
             border: Border.all(color: scheme.outlineVariant),
             boxShadow: [
               BoxShadow(
-                color: scheme.shadow.withValues(alpha: 0.08),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
+                color: scheme.shadow.withValues(alpha: 0.06),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.sm,
+              AppSpacing.sm,
+              AppSpacing.sm,
+              AppSpacing.sm,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Container(
+                      height: 28,
+                      width: 28,
+                      decoration: BoxDecoration(
+                        color: scheme.surfaceContainerHighest.withValues(
+                          alpha: 0.45,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
+                        ),
+                      ),
+                      child: Icon(
+                        Icons.calendar_month_rounded,
+                        color: scheme.primary,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: AppSpacing.sm),
                     Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            loc.formatMediumDate(entry.recordedAt),
-                            style: theme.textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: AppSpacing.xs),
-                          Text(
-                            loc.formatTimeOfDay(
-                              TimeOfDay.fromDateTime(entry.recordedAt),
-                            ),
-                            style: theme.textTheme.bodySmall?.copyWith(
-                              color: scheme.onSurfaceVariant,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
+                      child: Text(
+                        recordedLine,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                          height: 1.25,
+                        ),
                       ),
                     ),
                     if (onDelete != null)
-                      _DeleteButton(
-                        isDeleting: isDeleting,
-                        color: scheme.error,
-                        onPressed: isDeleting ? null : onDelete,
+                      PopupMenuButton<_EntryAction>(
+                        tooltip: 'More',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(
+                          minWidth: 32,
+                          minHeight: 32,
+                        ),
+                        enabled: !isDeleting,
+                        onSelected: (action) {
+                          switch (action) {
+                            case _EntryAction.edit:
+                              onTap();
+                            case _EntryAction.delete:
+                              onDelete?.call();
+                          }
+                        },
+                        itemBuilder: (context) => const [
+                          PopupMenuItem<_EntryAction>(
+                            value: _EntryAction.edit,
+                            child: Text('Edit'),
+                          ),
+                          PopupMenuItem<_EntryAction>(
+                            value: _EntryAction.delete,
+                            child: Text('Delete'),
+                          ),
+                        ],
+                        child: isDeleting
+                            ? const SizedBox(
+                                height: 32,
+                                width: 32,
+                                child: Padding(
+                                  padding: EdgeInsets.all(8),
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                ),
+                              )
+                            : Icon(
+                                Icons.more_horiz_rounded,
+                                size: 22,
+                                color: scheme.onSurfaceVariant,
+                              ),
                       ),
                   ],
                 ),
-                const SizedBox(height: AppSpacing.sm),
-                Wrap(
-                  spacing: AppSpacing.sm,
-                  runSpacing: AppSpacing.sm,
-                  children: _buildInfoChips(),
-                ),
-                if (entry.notes.trim().isNotEmpty) ...[
+                if (previewMetrics.isNotEmpty) ...[
                   const SizedBox(height: AppSpacing.sm),
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm,
-                      vertical: AppSpacing.sm,
+                      vertical: AppSpacing.xs,
                     ),
                     decoration: BoxDecoration(
                       color: scheme.surfaceContainerHighest.withValues(
-                        alpha: 0.30,
+                        alpha: 0.35,
                       ),
-                      borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                    ),
-                    child: Text(
-                      entry.notes.trim(),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: scheme.onSurfaceVariant,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                      border: Border.all(
+                        color: scheme.outlineVariant.withValues(alpha: 0.6),
                       ),
                     ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (var i = 0; i < previewMetrics.length; i++)
+                          Padding(
+                            padding: EdgeInsets.only(
+                              top: i > 0 ? 6 : 0,
+                            ),
+                            child: _CompactMetricRow(metric: previewMetrics[i]),
+                          ),
+                        if (extraMetrics.isNotEmpty) ...[
+                          const SizedBox(height: 6),
+                          Wrap(
+                            spacing: 5,
+                            runSpacing: 5,
+                            children: [
+                              for (final m in extraMetrics)
+                                Icon(
+                                  m.icon,
+                                  size: 15,
+                                  color: m.color.withValues(alpha: 0.9),
+                                ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ],
+                if (hasNotes) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.notes_rounded,
+                        size: 15,
+                        color: scheme.primary.withValues(alpha: 0.85),
+                      ),
+                      const SizedBox(width: AppSpacing.xs),
+                      Text(
+                        'Has notes',
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: scheme.onSurfaceVariant,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ],
@@ -121,85 +220,101 @@ class VitalEntryCard extends StatelessWidget {
     );
   }
 
-  List<Widget> _buildInfoChips() {
-    final chips = <Widget>[];
+  List<_MetricSpec> _buildMetricTiles(VitalEntry entry) {
+    final metrics = <_MetricSpec>[];
 
     if (entry.systolicMmHg != null || entry.diastolicMmHg != null) {
-      chips.add(
-        _InfoChip(
+      metrics.add(
+        _MetricSpec(
+          label: 'BP',
+          value:
+              '${entry.systolicMmHg?.toStringAsFixed(0) ?? '—'}/${entry.diastolicMmHg?.toStringAsFixed(0) ?? '—'}',
+          unit: 'mmHg',
           icon: Icons.favorite_border_rounded,
-          label:
-              'BP ${entry.systolicMmHg ?? '—'}/${entry.diastolicMmHg ?? '—'}',
           color: AppColors.statRed,
         ),
       );
     }
     if (entry.heartRateBpm != null) {
-      chips.add(
-        _InfoChip(
+      metrics.add(
+        _MetricSpec(
+          label: 'HR',
+          value: entry.heartRateBpm?.toStringAsFixed(0) ?? '—',
+          unit: 'bpm',
           icon: Icons.monitor_heart_outlined,
-          label: 'HR ${entry.heartRateBpm} bpm',
           color: AppColors.seed,
         ),
       );
     }
     if (entry.glucoseMgDl != null) {
-      chips.add(
-        _InfoChip(
+      metrics.add(
+        _MetricSpec(
+          label: 'Glucose',
+          value: _formatNumber(entry.glucoseMgDl!),
+          unit: 'mg/dL',
           icon: Icons.science_outlined,
-          label: 'Glucose ${_formatNumber(entry.glucoseMgDl!)} mg/dL',
           color: AppColors.statBlue,
         ),
       );
     }
     if (entry.spo2Percent != null) {
-      chips.add(
-        _InfoChip(
+      metrics.add(
+        _MetricSpec(
+          label: 'SpO₂',
+          value: entry.spo2Percent?.toStringAsFixed(0) ?? '—',
+          unit: '%',
           icon: Icons.air_rounded,
-          label: 'SpO₂ ${entry.spo2Percent}%',
           color: AppColors.premium,
         ),
       );
     }
     if (entry.temperatureCelsius != null) {
-      chips.add(
-        _InfoChip(
+      metrics.add(
+        _MetricSpec(
+          label: 'Temp',
+          value: entry.temperatureCelsius!.toStringAsFixed(1),
+          unit: '°C',
           icon: Icons.thermostat_outlined,
-          label: '${entry.temperatureCelsius!.toStringAsFixed(1)}°C',
           color: AppColors.freePlan,
         ),
       );
     }
     if (entry.weightKg != null) {
-      chips.add(
-        _InfoChip(
+      metrics.add(
+        _MetricSpec(
+          label: 'Weight',
+          value: _formatNumber(entry.weightKg!),
+          unit: 'kg',
           icon: Icons.monitor_weight_outlined,
-          label: '${_formatNumber(entry.weightKg!)} kg',
           color: AppColors.seed,
         ),
       );
     }
     if (entry.heightCm != null) {
-      chips.add(
-        _InfoChip(
+      metrics.add(
+        _MetricSpec(
+          label: 'Height',
+          value: _formatNumber(entry.heightCm!),
+          unit: 'cm',
           icon: Icons.height_rounded,
-          label: '${_formatNumber(entry.heightCm!)} cm',
           color: AppColors.statBlue,
         ),
       );
     }
 
-    if (chips.isEmpty) {
-      chips.add(
-        const _InfoChip(
+    if (metrics.isEmpty) {
+      metrics.add(
+        const _MetricSpec(
+          label: 'Notes',
+          value: '—',
+          unit: '',
           icon: Icons.notes_rounded,
-          label: 'Notes only',
           color: Colors.grey,
         ),
       );
     }
 
-    return chips;
+    return metrics;
   }
 
   String _formatNumber(double value) {
@@ -207,78 +322,76 @@ class VitalEntryCard extends StatelessWidget {
         ? value.toStringAsFixed(0)
         : value.toStringAsFixed(1);
   }
+
+  bool _isPlaceholderNotesOnly(List<_MetricSpec> metrics) {
+    return metrics.length == 1 &&
+        metrics.first.label == 'Notes' &&
+        metrics.first.value == '—';
+  }
 }
 
-class _InfoChip extends StatelessWidget {
-  const _InfoChip({
-    required this.icon,
+enum _EntryAction { edit, delete }
+
+class _MetricSpec {
+  const _MetricSpec({
     required this.label,
+    required this.value,
+    required this.unit,
+    required this.icon,
     required this.color,
   });
 
-  final IconData icon;
   final String label;
+  final String value;
+  final String unit;
+  final IconData icon;
   final Color color;
+}
+
+class _CompactMetricRow extends StatelessWidget {
+  const _CompactMetricRow({required this.metric});
+
+  final _MetricSpec metric;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppSpacing.sm,
-        vertical: AppSpacing.sm,
-      ),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.10),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(color: color.withValues(alpha: 0.18)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 15, color: color),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            label,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: color,
+    final scheme = theme.colorScheme;
+    final valueText = metric.unit.isEmpty
+        ? metric.value
+        : '${metric.value} ${metric.unit}';
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Icon(metric.icon, size: 14, color: metric.color),
+        const SizedBox(width: 6),
+        Expanded(
+          flex: 5,
+          child: Text(
+            metric.label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _DeleteButton extends StatelessWidget {
-  const _DeleteButton({
-    required this.isDeleting,
-    required this.color,
-    required this.onPressed,
-  });
-
-  final bool isDeleting;
-  final Color color;
-  final VoidCallback? onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 36,
-      width: 36,
-      child: IconButton(
-        tooltip: 'Delete',
-        padding: EdgeInsets.zero,
-        onPressed: onPressed,
-        icon: isDeleting
-            ? const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Icon(Icons.delete_outline_rounded, color: color, size: 20),
-      ),
+        ),
+        Expanded(
+          flex: 7,
+          child: Text(
+            valueText,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            textAlign: TextAlign.end,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: metric.color,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

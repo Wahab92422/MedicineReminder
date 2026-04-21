@@ -22,8 +22,9 @@ class MedicineLogReminderNotificationHelper {
     if (entry.status != MealStatuses.scheduled) return;
     if (!entry.loggedAt.isAfter(DateTime.now())) return;
 
-    final name =
-        entry.medicineName.trim().isEmpty ? 'medicine' : entry.medicineName.trim();
+    final name = entry.medicineName.trim().isEmpty
+        ? 'medicine'
+        : entry.medicineName.trim();
     await _notificationService.ensureNotificationPermissions();
     await _notificationService.scheduleMedicineDoseScheduledReminder(
       logId: entry.id,
@@ -35,8 +36,6 @@ class MedicineLogReminderNotificationHelper {
   }
 
   Future<void> cancelReminder(String logId) async {
-    await _notificationService.cancelNotification(
-      stableNotificationId(logId),
-    );
+    await _notificationService.cancelNotification(stableNotificationId(logId));
   }
 }

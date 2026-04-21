@@ -126,9 +126,9 @@ class _AddScheduleReminderSheetState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not save reminder: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not save reminder: $e')));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
@@ -159,18 +159,18 @@ class _AddScheduleReminderSheetState
           children: [
             Text(
               'New reminder',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               _kind == ScheduleReminderKind.general
                   ? 'Describe what to remember. The first line is used as the reminder title; extra lines are saved as details.'
                   : 'Add optional notes, pick a time, then continue. The right screen opens with status Scheduled.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: AppSpacing.md),
             DropdownButtonFormField<ScheduleReminderKind>(
@@ -178,12 +178,7 @@ class _AddScheduleReminderSheetState
               value: _kind,
               decoration: const InputDecoration(labelText: 'Type'),
               items: ScheduleReminderKind.values
-                  .map(
-                    (k) => DropdownMenuItem(
-                      value: k,
-                      child: Text(k.label),
-                    ),
-                  )
+                  .map((k) => DropdownMenuItem(value: k, child: Text(k.label)))
                   .toList(),
               onChanged: _saving
                   ? null

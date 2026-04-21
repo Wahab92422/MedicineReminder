@@ -33,12 +33,12 @@ class NotificationService {
   /// Default banner/list presentation; no custom `.aiff` (files not bundled).
   static const DarwinNotificationDetails _darwinDefault =
       DarwinNotificationDetails(
-    presentAlert: true,
-    presentBadge: true,
-    presentSound: true,
-    presentBanner: true,
-    presentList: true,
-  );
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        presentBanner: true,
+        presentList: true,
+      );
 
   NotificationDetails _detailsWithDarwin({
     required AndroidNotificationDetails android,
@@ -58,17 +58,17 @@ class NotificationService {
 
     const DarwinInitializationSettings darwinInitializationSettings =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+        );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
-      android: androidInitializationSettings,
-      iOS: darwinInitializationSettings,
-      macOS: darwinInitializationSettings,
-    );
+          android: androidInitializationSettings,
+          iOS: darwinInitializationSettings,
+          macOS: darwinInitializationSettings,
+        );
 
     final bool? initialized = await _flutterLocalNotificationsPlugin.initialize(
       settings: initializationSettings,
@@ -86,15 +86,15 @@ class NotificationService {
   Future<void> _createNotificationChannels() async {
     final AndroidNotificationChannel lowStockChannel =
         AndroidNotificationChannel(
-      'medicine_low_stock_channel',
-      'Medicine Low Stock',
-      description: 'Notifications for medicines running low on stock',
-      importance: Importance.high,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
-    );
+          'medicine_low_stock_channel',
+          'Medicine Low Stock',
+          description: 'Notifications for medicines running low on stock',
+          importance: Importance.high,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+        );
 
     final AndroidNotificationChannel expiryChannel = AndroidNotificationChannel(
       'medicine_expiry_channel',
@@ -109,27 +109,27 @@ class NotificationService {
 
     final AndroidNotificationChannel reminderChannel =
         AndroidNotificationChannel(
-      'medicine_expiry_reminder_channel',
-      'Medicine Expiry Reminder',
-      description: 'Scheduled reminders for medicines nearing expiry',
-      importance: Importance.defaultImportance,
-      playSound: true,
-      enableVibration: true,
-      enableLights: false,
-      vibrationPattern: Int64List.fromList([0, 200, 150, 200]),
-    );
+          'medicine_expiry_reminder_channel',
+          'Medicine Expiry Reminder',
+          description: 'Scheduled reminders for medicines nearing expiry',
+          importance: Importance.defaultImportance,
+          playSound: true,
+          enableVibration: true,
+          enableLights: false,
+          vibrationPattern: Int64List.fromList([0, 200, 150, 200]),
+        );
 
     final AndroidNotificationChannel appointmentChannel =
         AndroidNotificationChannel(
-      'appointment_reminder_channel',
-      'Appointment reminders',
-      description: 'Scheduled reminders for your logged appointments',
-      importance: Importance.high,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
-    );
+          'appointment_reminder_channel',
+          'Appointment reminders',
+          description: 'Scheduled reminders for your logged appointments',
+          importance: Importance.high,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+        );
 
     final AndroidNotificationChannel agendaChannel = AndroidNotificationChannel(
       'agenda_reminder_channel',
@@ -145,32 +145,33 @@ class NotificationService {
 
     final AndroidNotificationChannel mealScheduledChannel =
         AndroidNotificationChannel(
-      'meal_scheduled_reminder_channel',
-      'Meal reminders',
-      description: 'Alerts for meals you marked as scheduled',
-      importance: Importance.high,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
-    );
+          'meal_scheduled_reminder_channel',
+          'Meal reminders',
+          description: 'Alerts for meals you marked as scheduled',
+          importance: Importance.high,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+        );
 
     final AndroidNotificationChannel medicineDoseScheduledChannel =
         AndroidNotificationChannel(
-      'medicine_dose_scheduled_channel',
-      'Medicine dose reminders',
-      description: 'Alerts for medicine doses you marked as scheduled',
-      importance: Importance.high,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
-    );
+          'medicine_dose_scheduled_channel',
+          'Medicine dose reminders',
+          description: 'Alerts for medicine doses you marked as scheduled',
+          importance: Importance.high,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+        );
 
     final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
         _flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>();
+              AndroidFlutterLocalNotificationsPlugin
+            >();
 
     if (androidPlugin != null) {
       await androidPlugin.createNotificationChannel(lowStockChannel);
@@ -179,7 +180,9 @@ class NotificationService {
       await androidPlugin.createNotificationChannel(appointmentChannel);
       await androidPlugin.createNotificationChannel(agendaChannel);
       await androidPlugin.createNotificationChannel(mealScheduledChannel);
-      await androidPlugin.createNotificationChannel(medicineDoseScheduledChannel);
+      await androidPlugin.createNotificationChannel(
+        medicineDoseScheduledChannel,
+      );
     }
   }
 
@@ -187,7 +190,8 @@ class NotificationService {
     final IOSFlutterLocalNotificationsPlugin? iosPlugin =
         _flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
-                IOSFlutterLocalNotificationsPlugin>();
+              IOSFlutterLocalNotificationsPlugin
+            >();
 
     if (iosPlugin != null) {
       await iosPlugin.requestPermissions(alert: true, badge: true, sound: true);
@@ -196,7 +200,8 @@ class NotificationService {
     final MacOSFlutterLocalNotificationsPlugin? macPlugin =
         _flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
-                MacOSFlutterLocalNotificationsPlugin>();
+              MacOSFlutterLocalNotificationsPlugin
+            >();
 
     if (macPlugin != null) {
       await macPlugin.requestPermissions(alert: true, badge: true, sound: true);
@@ -205,12 +210,13 @@ class NotificationService {
     final AndroidFlutterLocalNotificationsPlugin? androidPlugin =
         _flutterLocalNotificationsPlugin
             .resolvePlatformSpecificImplementation<
-                AndroidFlutterLocalNotificationsPlugin>();
+              AndroidFlutterLocalNotificationsPlugin
+            >();
 
     if (androidPlugin != null) {
       await androidPlugin.requestNotificationsPermission();
-      final bool? canExact =
-          await androidPlugin.canScheduleExactNotifications();
+      final bool? canExact = await androidPlugin
+          .canScheduleExactNotifications();
       _androidReminderScheduleMode =
           androidReminderScheduleModeForExactAlarmPermission(canExact);
       if (kDebugMode && canExact != true) {
@@ -235,8 +241,8 @@ class NotificationService {
 
   /// Cold start: user opened the app by tapping a notification.
   Future<void> handlePendingLaunchNotification() async {
-    final details =
-        await _flutterLocalNotificationsPlugin.getNotificationAppLaunchDetails();
+    final details = await _flutterLocalNotificationsPlugin
+        .getNotificationAppLaunchDetails();
     if (details?.didNotificationLaunchApp != true) return;
     final p = details!.notificationResponse?.payload;
     if (p == null || p.isEmpty) return;
@@ -303,18 +309,18 @@ class NotificationService {
   }) async {
     final AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'medicine_low_stock_channel',
-      'Medicine Low Stock',
-      channelDescription:
-          'Notifications for medicines running low on stock',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      icon: '@mipmap/ic_launcher',
-      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
-    );
+          'medicine_low_stock_channel',
+          'Medicine Low Stock',
+          channelDescription:
+              'Notifications for medicines running low on stock',
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          icon: '@mipmap/ic_launcher',
+          vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+        );
 
     final notificationDetails = _detailsWithDarwin(
       android: androidNotificationDetails,
@@ -344,17 +350,17 @@ class NotificationService {
   }) async {
     final AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'medicine_expiry_channel',
-      'Medicine Expiry',
-      channelDescription: 'Notifications for medicines nearing expiry',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      icon: '@mipmap/ic_launcher',
-      vibrationPattern: Int64List.fromList([0, 500, 250, 500]),
-    );
+          'medicine_expiry_channel',
+          'Medicine Expiry',
+          channelDescription: 'Notifications for medicines nearing expiry',
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          icon: '@mipmap/ic_launcher',
+          vibrationPattern: Int64List.fromList([0, 500, 250, 500]),
+        );
 
     final notificationDetails = _detailsWithDarwin(
       android: androidNotificationDetails,
@@ -369,7 +375,8 @@ class NotificationService {
           'This item is past its expiry date ($expiryDate). Check with your clinician before using it.';
     } else if (daysUntilExpiry == 1) {
       title = 'Expires tomorrow: $medicineName';
-      body = 'Expiry date on the label: $expiryDate. Plan a refill or replacement.';
+      body =
+          'Expiry date on the label: $expiryDate. Plan a refill or replacement.';
     } else {
       title = 'Expiring in $daysUntilExpiry days: $medicineName';
       body =
@@ -409,18 +416,18 @@ class NotificationService {
 
     final AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'medicine_expiry_reminder_channel',
-      'Medicine Expiry Reminder',
-      channelDescription:
-          'Scheduled reminders for medicines nearing expiry',
-      importance: Importance.defaultImportance,
-      priority: Priority.defaultPriority,
-      playSound: true,
-      enableVibration: true,
-      enableLights: false,
-      icon: '@mipmap/ic_launcher',
-      vibrationPattern: Int64List.fromList([0, 200, 150, 200]),
-    );
+          'medicine_expiry_reminder_channel',
+          'Medicine Expiry Reminder',
+          channelDescription:
+              'Scheduled reminders for medicines nearing expiry',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          playSound: true,
+          enableVibration: true,
+          enableLights: false,
+          icon: '@mipmap/ic_launcher',
+          vibrationPattern: Int64List.fromList([0, 200, 150, 200]),
+        );
 
     final notificationDetails = _detailsWithDarwin(
       android: androidNotificationDetails,
@@ -466,17 +473,18 @@ class NotificationService {
 
     final AndroidNotificationDetails androidNotificationDetails =
         AndroidNotificationDetails(
-      'appointment_reminder_channel',
-      'Appointment reminders',
-      channelDescription: 'Scheduled reminders for your logged appointments',
-      importance: Importance.high,
-      priority: Priority.high,
-      playSound: true,
-      enableVibration: true,
-      enableLights: true,
-      icon: '@mipmap/ic_launcher',
-      vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
-    );
+          'appointment_reminder_channel',
+          'Appointment reminders',
+          channelDescription:
+              'Scheduled reminders for your logged appointments',
+          importance: Importance.high,
+          priority: Priority.high,
+          playSound: true,
+          enableVibration: true,
+          enableLights: true,
+          icon: '@mipmap/ic_launcher',
+          vibrationPattern: Int64List.fromList([0, 250, 250, 250]),
+        );
 
     final notificationDetails = _detailsWithDarwin(
       android: androidNotificationDetails,
@@ -484,8 +492,7 @@ class NotificationService {
 
     try {
       final when = _formatUserDateTime(scheduledAt);
-      final buffer = StringBuffer()
-        ..writeln('Time: $when');
+      final buffer = StringBuffer()..writeln('Time: $when');
       if (doctorName != null && doctorName.trim().isNotEmpty) {
         buffer.writeln('Provider: ${doctorName.trim()}');
       }
@@ -618,8 +625,7 @@ class NotificationService {
     }
   }
 
-  String _formatUserDateTime(DateTime d) =>
-      AppDateTimeFormat.formatDateTime(d);
+  String _formatUserDateTime(DateTime d) => AppDateTimeFormat.formatDateTime(d);
 
   /// User-created reminders from the Schedule screen (general type only in UI).
   Future<void> scheduleAgendaReminder({
@@ -637,8 +643,8 @@ class NotificationService {
       return;
     }
 
-    final AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(
+    final AndroidNotificationDetails
+    androidNotificationDetails = AndroidNotificationDetails(
       'agenda_reminder_channel',
       'Schedule reminders',
       channelDescription:

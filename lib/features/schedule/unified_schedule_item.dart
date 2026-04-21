@@ -5,12 +5,7 @@ import 'schedule_reminder_kind.dart';
 import 'user_schedule_reminder.dart';
 
 /// Origin of an item shown on the Schedule calendar.
-enum UnifiedScheduleSource {
-  appointment,
-  meal,
-  medicineLog,
-  userReminder,
-}
+enum UnifiedScheduleSource { appointment, meal, medicineLog, userReminder }
 
 /// Single row in the schedule list / calendar aggregation.
 class UnifiedScheduleItem {

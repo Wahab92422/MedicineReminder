@@ -4,7 +4,10 @@ import 'package:intl/intl.dart';
 abstract final class AppDateTimeFormat {
   static final DateFormat _dateMedium = DateFormat('MMM d, y', 'en_US');
   static final DateFormat _time12 = DateFormat('h:mm a', 'en_US');
-  static final DateFormat _dateTime12 = DateFormat("MMM d, y 'at' h:mm a", 'en_US');
+  static final DateFormat _dateTime12 = DateFormat(
+    "MMM d, y 'at' h:mm a",
+    'en_US',
+  );
 
   static String formatDate(DateTime d) => _dateMedium.format(d.toLocal());
 

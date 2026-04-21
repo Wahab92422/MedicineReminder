@@ -17,29 +17,25 @@ final notificationRepositoryProvider = Provider<NotificationRepository>(
 );
 
 /// Real-time list (Firestore snapshots). Prefer this over one-shot [getNotifications].
-final userNotificationsStreamProvider =
-    StreamProvider.autoDispose.family<List<AppNotification>, String>((
-  ref,
-  userId,
-) {
-  if (userId.isEmpty) {
-    return Stream.value(const <AppNotification>[]);
-  }
-  final repo = ref.watch(notificationRepositoryProvider);
-  return repo.watchNotifications(userId: userId);
-});
+final userNotificationsStreamProvider = StreamProvider.autoDispose
+    .family<List<AppNotification>, String>((ref, userId) {
+      if (userId.isEmpty) {
+        return Stream.value(const <AppNotification>[]);
+      }
+      final repo = ref.watch(notificationRepositoryProvider);
+      return repo.watchNotifications(userId: userId);
+    });
 
 /// Unread count derived from the live stream (keeps badges / footer in sync).
-final unreadNotificationsCountProvider = Provider.autoDispose.family<int, String>(
-  (ref, userId) {
-    final async = ref.watch(userNotificationsStreamProvider(userId));
-    return async.when(
-      data: (list) => list.where((n) => !n.isRead).length,
-      loading: () => 0,
-      error: (_, _) => 0,
-    );
-  },
-);
+final unreadNotificationsCountProvider = Provider.autoDispose
+    .family<int, String>((ref, userId) {
+      final async = ref.watch(userNotificationsStreamProvider(userId));
+      return async.when(
+        data: (list) => list.where((n) => !n.isRead).length,
+        loading: () => 0,
+        error: (_, _) => 0,
+      );
+    });
 
 /// One-shot fetch (e.g. rare callers); prefer [userNotificationsStreamProvider] in UI.
 @Deprecated('Use userNotificationsStreamProvider for realtime updates')
@@ -87,7 +83,9 @@ class NotificationInboxNotifier extends Notifier<NotificationInboxUiState> {
       await repo.markAsRead(userId: uid, notificationId: notificationId);
       state = state.copyWith(clearMutationError: true);
     } catch (e) {
-      state = state.copyWith(mutationError: 'Failed to mark notification as read');
+      state = state.copyWith(
+        mutationError: 'Failed to mark notification as read',
+      );
     }
   }
 
@@ -100,7 +98,9 @@ class NotificationInboxNotifier extends Notifier<NotificationInboxUiState> {
       await repo.markAllAsRead(userId: uid);
       state = state.copyWith(clearMutationError: true);
     } catch (e) {
-      state = state.copyWith(mutationError: 'Failed to mark all notifications as read');
+      state = state.copyWith(
+        mutationError: 'Failed to mark all notifications as read',
+      );
     }
   }
 
@@ -129,7 +129,9 @@ class NotificationInboxNotifier extends Notifier<NotificationInboxUiState> {
       await repo.deleteAllNotifications(userId: uid);
       state = state.copyWith(clearMutationError: true);
     } catch (e) {
-      state = state.copyWith(mutationError: 'Failed to delete all notifications');
+      state = state.copyWith(
+        mutationError: 'Failed to delete all notifications',
+      );
     }
   }
 

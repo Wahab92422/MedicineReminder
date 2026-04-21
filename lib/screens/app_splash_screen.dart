@@ -23,9 +23,10 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
             pageBuilder: (context, animation, secondaryAnimation) =>
                 const AuthGate(),
             transitionDuration: const Duration(milliseconds: 320),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
           ),
         );
       });
@@ -47,20 +48,20 @@ class _AppSplashScreenState extends State<AppSplashScreen> {
                   'Medicine App',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -0.5,
-                      ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: -0.5,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 Text(
                   'Your personal health records',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: Colors.white.withValues(alpha: 0.92),
-                        fontWeight: FontWeight.w500,
-                        height: 1.35,
-                      ),
+                    color: Colors.white.withValues(alpha: 0.92),
+                    fontWeight: FontWeight.w500,
+                    height: 1.35,
+                  ),
                 ),
               ],
             ),

@@ -31,10 +31,7 @@ class AppTextField extends StatelessWidget {
       textInputAction: textInputAction,
       onSubmitted: onSubmitted,
       autocorrect: autocorrect,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-      ),
+      decoration: InputDecoration(labelText: label, hintText: hint),
     );
   }
 }

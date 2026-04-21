@@ -20,8 +20,10 @@ class MedicineLogEntry {
   final String medicineId;
   final String medicineName;
   final DateTime loggedAt;
+
   /// Same labels as meals: [MealStatuses.taken], [MealStatuses.missed], [MealStatuses.scheduled].
   final String status;
+
   /// Units consumed when status is [MealStatuses.taken] (deducted from inventory).
   final int units;
   final String notes;

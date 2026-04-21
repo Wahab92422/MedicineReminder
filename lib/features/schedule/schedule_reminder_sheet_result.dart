@@ -17,7 +17,8 @@ final class ScheduleReminderOpenMeal extends ScheduleReminderSheetResult {
 }
 
 /// Navigate to add appointment with scheduled status locked.
-final class ScheduleReminderOpenAppointment extends ScheduleReminderSheetResult {
+final class ScheduleReminderOpenAppointment
+    extends ScheduleReminderSheetResult {
   ScheduleReminderOpenAppointment({
     required this.scheduledAt,
     required this.prefilledNotes,
@@ -28,7 +29,8 @@ final class ScheduleReminderOpenAppointment extends ScheduleReminderSheetResult 
 }
 
 /// Navigate to log medicine with scheduled status locked.
-final class ScheduleReminderOpenMedicineLog extends ScheduleReminderSheetResult {
+final class ScheduleReminderOpenMedicineLog
+    extends ScheduleReminderSheetResult {
   ScheduleReminderOpenMedicineLog({
     required this.loggedAt,
     required this.prefilledNotes,

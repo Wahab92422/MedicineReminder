@@ -16,11 +16,11 @@ class ScheduledReminderAutoMissService {
     AppointmentRepository? appointmentRepository,
     MedicineLogRepository? medicineLogRepository,
     UserScheduleReminderRepository? userScheduleReminderRepository,
-  })  : _meals = mealRepository ?? MealRepository(),
-        _appointments = appointmentRepository ?? AppointmentRepository(),
-        _logs = medicineLogRepository ?? MedicineLogRepository(),
-        _userReminders = userScheduleReminderRepository ??
-            UserScheduleReminderRepository();
+  }) : _meals = mealRepository ?? MealRepository(),
+       _appointments = appointmentRepository ?? AppointmentRepository(),
+       _logs = medicineLogRepository ?? MedicineLogRepository(),
+       _userReminders =
+           userScheduleReminderRepository ?? UserScheduleReminderRepository();
 
   final MealRepository _meals;
   final AppointmentRepository _appointments;
@@ -95,11 +95,7 @@ class ScheduledReminderAutoMissService {
         createdAt: e.createdAt,
         updatedAt: DateTime.now(),
       );
-      await _logs.updateEntry(
-        userId: userId,
-        entry: updated,
-        previous: e,
-      );
+      await _logs.updateEntry(userId: userId, entry: updated, previous: e);
     }
   }
 

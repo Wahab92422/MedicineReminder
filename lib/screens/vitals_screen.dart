@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../features/vitals/vital_entry.dart';
 import '../features/vitals/vital_providers.dart';
+import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../widgets/empty_state_widget.dart';
 import '../widgets/skeleton_placeholders.dart';
@@ -232,7 +233,6 @@ class _VitalsScreenState extends ConsumerState<VitalsScreen> {
     final state = ref.watch(vitalsListProvider);
     final notifier = ref.read(vitalsListProvider.notifier);
     final filteredItems = _applyFilters(state.items);
-    final scheme = Theme.of(context).colorScheme;
     final hasFilters =
         _metricFilter != null ||
         _fromDateFilter != null ||
@@ -244,8 +244,8 @@ class _VitalsScreenState extends ConsumerState<VitalsScreen> {
     ].where((value) => value != null).length;
     final backgroundColor = Color.lerp(
       Theme.of(context).scaffoldBackgroundColor,
-      scheme.primary,
-      0.04,
+      AppColors.premium,
+      0.03,
     );
 
     ref.listen<VitalsListUiState>(vitalsListProvider, (prev, next) {
@@ -282,9 +282,12 @@ class _VitalsScreenState extends ConsumerState<VitalsScreen> {
                       width: 10,
                       height: 10,
                       decoration: BoxDecoration(
-                        color: scheme.primary,
+                        color: AppColors.statGreen,
                         shape: BoxShape.circle,
-                        border: Border.all(color: scheme.surface, width: 1.5),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.surface,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -379,7 +382,9 @@ class _VitalsScreenState extends ConsumerState<VitalsScreen> {
             height: MediaQuery.sizeOf(context).height * 0.5,
             child: EmptyStateWidget(
               title: 'No vitals yet',
-              subtitle: 'Record blood pressure, heart rate, glucose, and more.',
+              subtitle:
+                  'Record blood pressure, heart rate, glucose, and more.',
+              icon: Icons.monitor_heart_outlined,
             ),
           ),
         ],
@@ -411,21 +416,21 @@ class _VitalsScreenState extends ConsumerState<VitalsScreen> {
         if (index >= filteredItems.length) {
           return const SkeletonLoadMoreFooter();
         }
-        final e = filteredItems[index];
+        final item = filteredItems[index];
         return VitalEntryCard(
-          entry: e,
-          isDeleting: state.deletingEntryId == e.id,
+          entry: item,
+          isDeleting: state.deletingEntryId == item.id,
           onTap: () async {
             final changed = await Navigator.of(context).push<bool>(
               MaterialPageRoute<bool>(
-                builder: (_) => AddUpdateVitalsScreen(existing: e),
+                builder: (_) => AddUpdateVitalsScreen(existing: item),
               ),
             );
             if (changed == true && context.mounted) {
               notifier.refresh();
             }
           },
-          onDelete: () => _confirmDelete(e),
+          onDelete: () => _confirmDelete(item),
         );
       },
     );

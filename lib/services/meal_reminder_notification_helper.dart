@@ -22,7 +22,9 @@ class MealReminderNotificationHelper {
     if (entry.status != MealStatuses.scheduled) return;
     if (!entry.mealAt.isAfter(DateTime.now())) return;
 
-    final label = entry.mealType.trim().isEmpty ? 'meal' : entry.mealType.trim();
+    final label = entry.mealType.trim().isEmpty
+        ? 'meal'
+        : entry.mealType.trim();
     await _notificationService.ensureNotificationPermissions();
     await _notificationService.scheduleMealScheduledReminder(
       mealId: entry.id,

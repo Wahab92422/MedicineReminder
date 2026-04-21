@@ -38,7 +38,10 @@ class MedicineLogRepository {
   }
 
   CollectionReference<Map<String, dynamic>> _logs(String userId) {
-    return _firestore.collection('users').doc(userId).collection('medicineLogs');
+    return _firestore
+        .collection('users')
+        .doc(userId)
+        .collection('medicineLogs');
   }
 
   String allocateLogId(String userId) => _logs(userId).doc().id;
@@ -48,7 +51,9 @@ class MedicineLogRepository {
     int limit = 20,
     DocumentSnapshot<Map<String, dynamic>>? pageCursor,
   }) async {
-    Query<Map<String, dynamic>> q = _logs(userId).orderBy('loggedAt', descending: true);
+    Query<Map<String, dynamic>> q = _logs(
+      userId,
+    ).orderBy('loggedAt', descending: true);
     if (pageCursor != null) {
       q = q.startAfterDocument(pageCursor);
     }
@@ -57,7 +62,10 @@ class MedicineLogRepository {
     final items = docs.map(MedicineLogEntry.fromFirestore).toList();
     final lastDoc = docs.isEmpty ? null : docs.last;
     final hasMore = docs.length == limit;
-    return MedicineLogPage(items: items, nextPageCursor: hasMore ? lastDoc : null);
+    return MedicineLogPage(
+      items: items,
+      nextPageCursor: hasMore ? lastDoc : null,
+    );
   }
 
   /// Live dose log list (newest first).
@@ -75,9 +83,9 @@ class MedicineLogRepository {
   Future<void> _notifyInventoryAlerts(String userId, String medicineId) async {
     final medDoc = await _medicines(userId).doc(medicineId).get();
     if (medDoc.exists) {
-      await MedicineNotificationHelper().checkAndCreateNotifications(
-        [MedicineEntry.fromFirestore(medDoc)],
-      );
+      await MedicineNotificationHelper().checkAndCreateNotifications([
+        MedicineEntry.fromFirestore(medDoc),
+      ]);
     }
   }
 
@@ -86,29 +94,33 @@ class MedicineLogRepository {
     required MedicineLogEntry entry,
   }) async {
     try {
-      await _firestore.runTransaction((txn) async {
-        final medRef = _medicines(userId).doc(entry.medicineId);
-        final logRef = _logs(userId).doc(entry.id);
-        final medSnap = await txn.get(medRef);
-        if (!medSnap.exists) {
-          throw StateError('Medicine no longer in inventory.');
-        }
-        final med = MedicineEntry.fromFirestore(medSnap);
-        final payload = entry.toCreateMapClientTs(DateTime.now());
-        txn.set(logRef, payload);
+      await _firestore
+          .runTransaction((txn) async {
+            final medRef = _medicines(userId).doc(entry.medicineId);
+            final logRef = _logs(userId).doc(entry.id);
+            final medSnap = await txn.get(medRef);
+            if (!medSnap.exists) {
+              throw StateError('Medicine no longer in inventory.');
+            }
+            final med = MedicineEntry.fromFirestore(medSnap);
+            final payload = entry.toCreateMapClientTs(DateTime.now());
+            txn.set(logRef, payload);
 
-        if (entry.status == MealStatuses.taken) {
-          final u = entry.units;
-          if (u > med.quantity) {
-            throw StateError('Not enough stock (${med.quantity} available).');
-          }
-          final newQty = med.quantity - u;
-          txn.update(medRef, {
-            'quantity': newQty,
-            'updatedAt': FieldValue.serverTimestamp(),
-          });
-        }
-      }).timeout(_writeTimeout);
+            if (entry.status == MealStatuses.taken) {
+              final u = entry.units;
+              if (u > med.quantity) {
+                throw StateError(
+                  'Not enough stock (${med.quantity} available).',
+                );
+              }
+              final newQty = med.quantity - u;
+              txn.update(medRef, {
+                'quantity': newQty,
+                'updatedAt': FieldValue.serverTimestamp(),
+              });
+            }
+          })
+          .timeout(_writeTimeout);
       await _notifyInventoryAlerts(userId, entry.medicineId);
       await MedicineLogReminderNotificationHelper().syncReminderForEntry(entry);
       return MedicineLogWriteResponse.success(entry.id);
@@ -132,31 +144,35 @@ class MedicineLogRepository {
       );
     }
     try {
-      await _firestore.runTransaction((txn) async {
-        final medRef = _medicines(userId).doc(entry.medicineId);
-        final logRef = _logs(userId).doc(entry.id);
-        final medSnap = await txn.get(medRef);
-        if (!medSnap.exists) {
-          throw StateError('Medicine no longer in inventory.');
-        }
-        var med = MedicineEntry.fromFirestore(medSnap);
-        // Revert previous "taken" deduction
-        if (previous.status == MealStatuses.taken) {
-          med = med.copyWith(quantity: med.quantity + previous.units);
-        }
-        // Apply new state
-        if (entry.status == MealStatuses.taken) {
-          if (entry.units > med.quantity) {
-            throw StateError('Not enough stock (${med.quantity} available).');
-          }
-          med = med.copyWith(quantity: med.quantity - entry.units);
-        }
-        txn.update(logRef, entry.toUpdateMap());
-        txn.update(medRef, {
-          'quantity': med.quantity,
-          'updatedAt': FieldValue.serverTimestamp(),
-        });
-      }).timeout(_writeTimeout);
+      await _firestore
+          .runTransaction((txn) async {
+            final medRef = _medicines(userId).doc(entry.medicineId);
+            final logRef = _logs(userId).doc(entry.id);
+            final medSnap = await txn.get(medRef);
+            if (!medSnap.exists) {
+              throw StateError('Medicine no longer in inventory.');
+            }
+            var med = MedicineEntry.fromFirestore(medSnap);
+            // Revert previous "taken" deduction
+            if (previous.status == MealStatuses.taken) {
+              med = med.copyWith(quantity: med.quantity + previous.units);
+            }
+            // Apply new state
+            if (entry.status == MealStatuses.taken) {
+              if (entry.units > med.quantity) {
+                throw StateError(
+                  'Not enough stock (${med.quantity} available).',
+                );
+              }
+              med = med.copyWith(quantity: med.quantity - entry.units);
+            }
+            txn.update(logRef, entry.toUpdateMap());
+            txn.update(medRef, {
+              'quantity': med.quantity,
+              'updatedAt': FieldValue.serverTimestamp(),
+            });
+          })
+          .timeout(_writeTimeout);
       await _notifyInventoryAlerts(userId, entry.medicineId);
       await MedicineLogReminderNotificationHelper().syncReminderForEntry(entry);
       return MedicineLogWriteResponse.success(entry.id);
@@ -174,30 +190,32 @@ class MedicineLogRepository {
   }) async {
     await MedicineLogReminderNotificationHelper().cancelReminder(entry.id);
     try {
-      await _firestore.runTransaction((txn) async {
-        final logRef = _logs(userId).doc(entry.id);
-        final logSnap = await txn.get(logRef);
-        if (!logSnap.exists) {
-          throw StateError('Log already removed.');
-        }
-        final data = logSnap.data();
-        if (data == null) {
-          throw StateError('Log already removed.');
-        }
-        final fromServer = MedicineLogEntry.fromMap(entry.id, data);
-        final medRef = _medicines(userId).doc(fromServer.medicineId);
-        if (fromServer.status == MealStatuses.taken) {
-          final medSnap = await txn.get(medRef);
-          if (medSnap.exists) {
-            final med = MedicineEntry.fromFirestore(medSnap);
-            txn.update(medRef, {
-              'quantity': med.quantity + fromServer.units,
-              'updatedAt': FieldValue.serverTimestamp(),
-            });
-          }
-        }
-        txn.delete(logRef);
-      }).timeout(_writeTimeout);
+      await _firestore
+          .runTransaction((txn) async {
+            final logRef = _logs(userId).doc(entry.id);
+            final logSnap = await txn.get(logRef);
+            if (!logSnap.exists) {
+              throw StateError('Log already removed.');
+            }
+            final data = logSnap.data();
+            if (data == null) {
+              throw StateError('Log already removed.');
+            }
+            final fromServer = MedicineLogEntry.fromMap(entry.id, data);
+            final medRef = _medicines(userId).doc(fromServer.medicineId);
+            if (fromServer.status == MealStatuses.taken) {
+              final medSnap = await txn.get(medRef);
+              if (medSnap.exists) {
+                final med = MedicineEntry.fromFirestore(medSnap);
+                txn.update(medRef, {
+                  'quantity': med.quantity + fromServer.units,
+                  'updatedAt': FieldValue.serverTimestamp(),
+                });
+              }
+            }
+            txn.delete(logRef);
+          })
+          .timeout(_writeTimeout);
       await _notifyInventoryAlerts(userId, entry.medicineId);
       return MedicineLogWriteResponse.success(entry.id);
     } catch (e) {
@@ -227,8 +245,7 @@ class MedicineLogRepository {
     required String userId,
     required String entryId,
   }) async {
-    final snap =
-        await _logs(userId).doc(entryId).get().timeout(_readTimeout);
+    final snap = await _logs(userId).doc(entryId).get().timeout(_readTimeout);
     if (!snap.exists) return null;
     return MedicineLogEntry.fromFirestore(snap);
   }

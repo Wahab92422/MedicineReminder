@@ -1,6 +1,7 @@
 abstract final class AppointmentStatuses {
   static const attended = 'Attended';
   static const missed = 'Missed';
+
   /// Upcoming visit — was stored as `Pending` in older app versions.
   static const scheduled = 'Scheduled';
 

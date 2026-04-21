@@ -1,6 +1,7 @@
 abstract final class MealStatuses {
   static const taken = 'Taken';
   static const missed = 'Missed';
+
   /// Future / planned — was stored as `Pending` in older app versions.
   static const scheduled = 'Scheduled';
 

@@ -53,7 +53,9 @@ class MedicineNotificationHelper {
     );
 
     if (!hasExistingLowStockNotification) {
-      debugPrint('Low stock alert for ${medicine.name}: showing OS notification');
+      debugPrint(
+        'Low stock alert for ${medicine.name}: showing OS notification',
+      );
       await _notificationService.ensureNotificationPermissions();
       await _notificationService.showLowStockNotification(
         medicineName: medicine.name,

@@ -22,6 +22,7 @@ class ScheduledRemindersScreen extends ConsumerStatefulWidget {
 class _ScheduledRemindersScreenState
     extends ConsumerState<ScheduledRemindersScreen> {
   final _searchController = TextEditingController();
+
   /// `null` = all types.
   ScheduledReminderRowKind? _filterKind;
 
@@ -31,19 +32,14 @@ class _ScheduledRemindersScreenState
     super.dispose();
   }
 
-  List<ScheduledReminderRow> _filter(
-    List<ScheduledReminderRow> all,
-    String q,
-  ) {
+  List<ScheduledReminderRow> _filter(List<ScheduledReminderRow> all, String q) {
     var list = all;
     if (_filterKind != null) {
       list = list.where((e) => e.kind == _filterKind).toList();
     }
     final t = q.trim().toLowerCase();
     if (t.isEmpty) return list;
-    return list
-        .where((e) => e.title.toLowerCase().contains(t))
-        .toList();
+    return list.where((e) => e.title.toLowerCase().contains(t)).toList();
   }
 
   String _kindLabel(ScheduledReminderRowKind k) {
@@ -243,15 +239,14 @@ class _ScheduledRemindersScreenState
               ),
               error: (e, _) => Center(child: Text('$e')),
               data: (all) {
-                final filtered =
-                    _filter(all, _searchController.text);
+                final filtered = _filter(all, _searchController.text);
                 if (filtered.isEmpty) {
                   final q = _searchController.text.trim();
                   final emptyMessage = all.isEmpty
                       ? 'No scheduled reminders.'
                       : (hasFilters && q.isEmpty
-                          ? 'No reminders of this type in the last 12 hours.'
-                          : 'No matches.');
+                            ? 'No reminders of this type in the last 12 hours.'
+                            : 'No matches.');
                   return Center(
                     child: Text(
                       emptyMessage,

@@ -35,7 +35,8 @@ class ReminderIndicatorScreen extends ConsumerStatefulWidget {
       _ReminderIndicatorScreenState();
 }
 
-class _ReminderIndicatorScreenState extends ConsumerState<ReminderIndicatorScreen> {
+class _ReminderIndicatorScreenState
+    extends ConsumerState<ReminderIndicatorScreen> {
   Timer? _timer;
   int _secondsLeft = 0;
   bool _busy = false;
@@ -135,7 +136,9 @@ class _ReminderIndicatorScreenState extends ConsumerState<ReminderIndicatorScree
             createdAt: e.createdAt,
             updatedAt: DateTime.now(),
           );
-          await ref.read(mealRepositoryProvider).updateEntry(userId: uid, entry: next);
+          await ref
+              .read(mealRepositoryProvider)
+              .updateEntry(userId: uid, entry: next);
           await MealReminderNotificationHelper().cancelReminder(e.id);
           break;
         case ReminderPayloadKind.appointment:
@@ -173,17 +176,17 @@ class _ReminderIndicatorScreenState extends ConsumerState<ReminderIndicatorScree
             createdAt: e.createdAt,
             updatedAt: DateTime.now(),
           );
-          await ref.read(medicineLogRepositoryProvider).updateEntry(
-                userId: uid,
-                entry: next,
-                previous: e,
-              );
+          await ref
+              .read(medicineLogRepositoryProvider)
+              .updateEntry(userId: uid, entry: next, previous: e);
           await MedicineLogReminderNotificationHelper().cancelReminder(e.id);
           break;
         case ReminderPayloadKind.agenda:
           final r = _agenda;
           if (r == null) throw StateError('Reminder not found');
-          await ref.read(userScheduleReminderRepositoryProvider).setReminderOutcome(
+          await ref
+              .read(userScheduleReminderRepositoryProvider)
+              .setReminderOutcome(
                 userId: uid,
                 reminderId: r.id,
                 outcome: positive ? 'completed' : 'missed',
@@ -195,15 +198,13 @@ class _ReminderIndicatorScreenState extends ConsumerState<ReminderIndicatorScree
       if (!mounted) return;
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(positive ? 'Saved.' : 'Marked as missed.'),
-        ),
+        SnackBar(content: Text(positive ? 'Saved.' : 'Marked as missed.')),
       );
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _busy = false);
     }
@@ -227,38 +228,42 @@ class _ReminderIndicatorScreenState extends ConsumerState<ReminderIndicatorScree
       );
     }
 
-    final (String title, String subtitle, String posLabel, String negLabel) =
-        switch (p.kind) {
+    final (
+      String title,
+      String subtitle,
+      String posLabel,
+      String negLabel,
+    ) = switch (p.kind) {
       ReminderPayloadKind.meal => (
-          'Meal reminder',
-          _meal != null
-              ? '${_meal!.mealType.isEmpty ? 'Meal' : _meal!.mealType} · $when'
-              : 'Loading…',
-          'Logged',
-          'Missed',
-        ),
+        'Meal reminder',
+        _meal != null
+            ? '${_meal!.mealType.isEmpty ? 'Meal' : _meal!.mealType} · $when'
+            : 'Loading…',
+        'Logged',
+        'Missed',
+      ),
       ReminderPayloadKind.appointment => (
-          'Appointment reminder',
-          _appointment != null
-              ? '${_appointment!.title.isEmpty ? 'Visit' : _appointment!.title} · $when'
-              : 'Loading…',
-          'Attended',
-          'Missed',
-        ),
+        'Appointment reminder',
+        _appointment != null
+            ? '${_appointment!.title.isEmpty ? 'Visit' : _appointment!.title} · $when'
+            : 'Loading…',
+        'Attended',
+        'Missed',
+      ),
       ReminderPayloadKind.medicineLog => (
-          'Medicine dose',
-          _medicineLog != null
-              ? '${_medicineLog!.medicineName} · $when'
-              : 'Loading…',
-          'Taken',
-          'Missed',
-        ),
+        'Medicine dose',
+        _medicineLog != null
+            ? '${_medicineLog!.medicineName} · $when'
+            : 'Loading…',
+        'Taken',
+        'Missed',
+      ),
       ReminderPayloadKind.agenda => (
-          'Reminder',
-          _agenda != null ? '${_agenda!.title} · $when' : 'Loading…',
-          'Done',
-          'Missed',
-        ),
+        'Reminder',
+        _agenda != null ? '${_agenda!.title} · $when' : 'Loading…',
+        'Done',
+        'Missed',
+      ),
       ReminderPayloadKind.expiry => ('Reminder', when, '', ''),
     };
 

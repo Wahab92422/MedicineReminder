@@ -47,8 +47,7 @@ class AppointmentRepository {
         .collection('appointments');
   }
 
-  String allocateAppointmentId(String userId) =>
-      _appointments(userId).doc().id;
+  String allocateAppointmentId(String userId) => _appointments(userId).doc().id;
 
   Future<AppointmentPage> getAppointmentsPage({
     required String userId,
@@ -88,10 +87,9 @@ class AppointmentRepository {
       entryId: entry.id,
       action: 'create',
       operation: () async {
-        await _appointments(userId)
-            .doc(entry.id)
-            .set(payload)
-            .timeout(_writeTimeout);
+        await _appointments(
+          userId,
+        ).doc(entry.id).set(payload).timeout(_writeTimeout);
       },
       verifyOnServer: () => _exists(userId: userId, entryId: entry.id),
       verifyInCache: () =>
@@ -137,7 +135,9 @@ class AppointmentRepository {
       entryId: entryId,
       action: 'delete',
       operation: () async {
-        await _appointments(userId).doc(entryId).delete().timeout(_writeTimeout);
+        await _appointments(
+          userId,
+        ).doc(entryId).delete().timeout(_writeTimeout);
       },
       verifyOnServer: () async => !(await _exists(
         userId: userId,
@@ -256,8 +256,9 @@ class AppointmentRepository {
     required String userId,
     required String entryId,
   }) async {
-    final snap =
-        await _appointments(userId).doc(entryId).get().timeout(_readTimeout);
+    final snap = await _appointments(
+      userId,
+    ).doc(entryId).get().timeout(_readTimeout);
     if (!snap.exists) return null;
     return AppointmentEntry.fromFirestore(snap);
   }

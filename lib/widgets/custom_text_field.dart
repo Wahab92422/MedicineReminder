@@ -37,11 +37,8 @@ class CustomTextField extends StatelessWidget {
       readOnly: readOnly,
       inputFormatters: inputFormatters,
       maxLines: maxLines,
-      keyboardType: maxLines > 1
-          ? TextInputType.multiline
-          : keyboardType,
-      textInputAction:
-          maxLines > 1 ? TextInputAction.newline : textInputAction,
+      keyboardType: maxLines > 1 ? TextInputType.multiline : keyboardType,
+      textInputAction: maxLines > 1 ? TextInputAction.newline : textInputAction,
       onSubmitted: onSubmitted,
       autocorrect: autocorrect,
       decoration: InputDecoration(

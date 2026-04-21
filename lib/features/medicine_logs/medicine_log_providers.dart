@@ -39,8 +39,8 @@ final inventoryMedicinesForPickerProvider =
     });
 
 /// Dose logs (newest first, live).
-final medicineLogsStreamProvider =
-    StreamProvider.autoDispose.family<List<MedicineLogEntry>, String>((ref, userId) {
+final medicineLogsStreamProvider = StreamProvider.autoDispose
+    .family<List<MedicineLogEntry>, String>((ref, userId) {
       if (userId.isEmpty) {
         return Stream.value(const []);
       }

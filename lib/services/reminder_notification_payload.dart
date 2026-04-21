@@ -1,13 +1,7 @@
 import 'dart:convert';
 
 /// Types routed to [ReminderIndicatorScreen] from local notification taps.
-enum ReminderPayloadKind {
-  meal,
-  appointment,
-  medicineLog,
-  agenda,
-  expiry,
-}
+enum ReminderPayloadKind { meal, appointment, medicineLog, agenda, expiry }
 
 /// Parsed payload from OS notification `payload` (JSON).
 class ReminderNotificationPayload {

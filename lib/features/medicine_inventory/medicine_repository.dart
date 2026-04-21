@@ -92,9 +92,10 @@ class MedicineRepository {
   Stream<List<MedicineEntry>> watchAllMedicinesOrderedByName({
     required String userId,
   }) {
-    return _medicines(userId).orderBy('nameLower').snapshots().map(
-          (s) => s.docs.map(MedicineEntry.fromFirestore).toList(),
-        );
+    return _medicines(userId)
+        .orderBy('nameLower')
+        .snapshots()
+        .map((s) => s.docs.map(MedicineEntry.fromFirestore).toList());
   }
 
   Future<MedicinePage> listMedicines({
@@ -132,10 +133,9 @@ class MedicineRepository {
 
   /// All medicines for pickers (e.g. dose logs). Ordered by [nameLower].
   Future<List<MedicineEntry>> listAllMedicines({required String userId}) async {
-    final snap = await _medicines(userId)
-        .orderBy('nameLower')
-        .get()
-        .timeout(_readTimeout);
+    final snap = await _medicines(
+      userId,
+    ).orderBy('nameLower').get().timeout(_readTimeout);
     return snap.docs.map(MedicineEntry.fromFirestore).toList();
   }
 
@@ -174,9 +174,9 @@ class MedicineRepository {
 
       final created = await _medicines(userId).doc(entry.id).get();
       if (created.exists) {
-        await MedicineNotificationHelper().checkAndCreateNotifications(
-          [MedicineEntry.fromFirestore(created)],
-        );
+        await MedicineNotificationHelper().checkAndCreateNotifications([
+          MedicineEntry.fromFirestore(created),
+        ]);
       }
 
       return const MedicineWriteResponse(success: true);
@@ -205,9 +205,9 @@ class MedicineRepository {
 
       final updated = await _medicines(userId).doc(entry.id).get();
       if (updated.exists) {
-        await MedicineNotificationHelper().checkAndCreateNotifications(
-          [MedicineEntry.fromFirestore(updated)],
-        );
+        await MedicineNotificationHelper().checkAndCreateNotifications([
+          MedicineEntry.fromFirestore(updated),
+        ]);
       }
 
       return const MedicineWriteResponse(success: true);
@@ -275,9 +275,9 @@ class MedicineRepository {
           .timeout(_writeTimeout);
       final doc = await _medicines(userId).doc(entryId).get();
       if (doc.exists) {
-        await MedicineNotificationHelper().checkAndCreateNotifications(
-          [MedicineEntry.fromFirestore(doc)],
-        );
+        await MedicineNotificationHelper().checkAndCreateNotifications([
+          MedicineEntry.fromFirestore(doc),
+        ]);
       }
       return const MedicineWriteResponse(success: true);
     } catch (e) {

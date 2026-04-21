@@ -79,10 +79,7 @@ class DashboardNavigationDrawer extends ConsumerWidget {
 }
 
 class _DrawerBranding extends StatelessWidget {
-  const _DrawerBranding({
-    required this.email,
-    required this.theme,
-  });
+  const _DrawerBranding({required this.email, required this.theme});
 
   final String? email;
   final ThemeData theme;

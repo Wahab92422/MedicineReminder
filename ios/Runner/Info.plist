@@ -59,6 +59,10 @@
 			<string>UIInterfaceOrientationLandscapeLeft</string>
 			<string>UIInterfaceOrientationLandscapeRight</string>
 		</array>
+		<key>NSSpeechRecognitionUsageDescription</key>
+		<string>Dictate notes using your voice in health record fields.</string>
+		<key>NSMicrophoneUsageDescription</key>
+		<string>The microphone is used when you dictate notes.</string>
 		<key>NSCameraUsageDescription</key>
 		<string>Take a photo to attach to lab reports.</string>
 		<key>NSPhotoLibraryUsageDescription</key>

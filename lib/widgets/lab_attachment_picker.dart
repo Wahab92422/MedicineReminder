@@ -35,7 +35,10 @@ class LabAttachmentPicker extends StatelessWidget {
 
   Future<void> _addFromCamera(BuildContext context) async {
     final picker = ImagePicker();
-    final x = await picker.pickImage(source: ImageSource.camera, imageQuality: 85);
+    final x = await picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 85,
+    );
     if (x == null) return;
     final bytes = await x.readAsBytes();
     final mime = lookupMimeType(x.path, headerBytes: bytes) ?? 'image/jpeg';
@@ -70,17 +73,15 @@ class LabAttachmentPicker extends StatelessWidget {
   }
 
   Future<void> _addFromFiles() async {
-    final res = await FilePicker.pickFiles(
-      allowMultiple: true,
-      withData: true,
-    );
+    final res = await FilePicker.pickFiles(allowMultiple: true, withData: true);
     if (res == null || res.files.isEmpty) return;
     final next = List<PickedAttachment>.from(attachments);
     for (final f in res.files) {
       final bytes = f.bytes;
       if (bytes == null || bytes.isEmpty) continue;
       final name = f.name;
-      final mime = lookupMimeType(name, headerBytes: bytes) ??
+      final mime =
+          lookupMimeType(name, headerBytes: bytes) ??
           'application/octet-stream';
       next.add(
         PickedAttachment(
@@ -156,8 +157,8 @@ class LabAttachmentPicker extends StatelessWidget {
           Text(
             'No attachments yet.',
             style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           )
         else
           ListView.separated(
@@ -170,8 +171,16 @@ class LabAttachmentPicker extends StatelessWidget {
               return ListTile(
                 contentPadding: EdgeInsets.zero,
                 leading: const Icon(Icons.insert_drive_file_outlined),
-                title: Text(a.displayName, maxLines: 1, overflow: TextOverflow.ellipsis),
-                subtitle: Text(a.mimeType, maxLines: 1, overflow: TextOverflow.ellipsis),
+                title: Text(
+                  a.displayName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  a.mimeType,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
                 trailing: IconButton(
                   icon: const Icon(Icons.close_rounded),
                   onPressed: () => _removeAt(i),

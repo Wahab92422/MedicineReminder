@@ -17,6 +17,7 @@ import '../widgets/custom_dropdown.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/speech_text_field.dart';
 
 class AddUpdateMealScreen extends ConsumerStatefulWidget {
   const AddUpdateMealScreen({
@@ -282,7 +283,7 @@ class _AddUpdateMealScreenState extends ConsumerState<AddUpdateMealScreen> {
                 onDateSelected: (d) => setState(() => _mealAt = d),
               ),
               const SizedBox(height: AppSpacing.md),
-              CustomTextField(
+              SpeechTextField(
                 controller: _notesController,
                 label: 'Notes',
                 maxLines: 3,

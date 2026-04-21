@@ -18,12 +18,19 @@ abstract final class AppTheme {
       colorScheme: colorScheme,
       scaffoldBackgroundColor: _canvas,
       canvasColor: _canvas,
-      textTheme: Typography.material2021(platform: defaultTargetPlatform).black.copyWith(
-        titleLarge: const TextStyle(fontWeight: FontWeight.w700, letterSpacing: -0.2),
-        titleMedium: const TextStyle(fontWeight: FontWeight.w600, letterSpacing: -0.1),
-        bodyLarge: const TextStyle(height: 1.35),
-        bodyMedium: const TextStyle(height: 1.35),
-      ),
+      textTheme: Typography.material2021(platform: defaultTargetPlatform).black
+          .copyWith(
+            titleLarge: const TextStyle(
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.2,
+            ),
+            titleMedium: const TextStyle(
+              fontWeight: FontWeight.w600,
+              letterSpacing: -0.1,
+            ),
+            bodyLarge: const TextStyle(height: 1.35),
+            bodyMedium: const TextStyle(height: 1.35),
+          ),
       appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,

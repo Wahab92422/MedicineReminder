@@ -9,10 +9,8 @@ class _SkeletonColors {
 
   final ColorScheme scheme;
 
-  Color get base =>
-      scheme.surfaceContainerHighest.withValues(alpha: 0.55);
-  Color get highlight =>
-      scheme.surfaceContainerHigh.withValues(alpha: 0.92);
+  Color get base => scheme.surfaceContainerHighest.withValues(alpha: 0.55);
+  Color get highlight => scheme.surfaceContainerHigh.withValues(alpha: 0.92);
 }
 
 /// Non-scrollable column of skeleton cards (e.g. inside [SingleChildScrollView]).
@@ -56,6 +54,7 @@ class ListLoadingSkeleton extends StatelessWidget {
 
   final int itemCount;
   final EdgeInsetsGeometry padding;
+
   /// When true, draws a block above the list (matches screens with an overview card).
   final bool showOverviewPlaceholder;
 
@@ -128,7 +127,9 @@ class InlineFormSkeleton extends StatelessWidget {
         children: List.generate(
           lines,
           (i) => Padding(
-            padding: EdgeInsets.only(bottom: i == lines - 1 ? 0 : AppSpacing.md),
+            padding: EdgeInsets.only(
+              bottom: i == lines - 1 ? 0 : AppSpacing.md,
+            ),
             child: Container(
               height: i == 0 ? 52 : 48,
               decoration: BoxDecoration(
@@ -204,9 +205,7 @@ class _SkeletonOverviewBlock extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -254,9 +253,7 @@ class _SkeletonListCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outlineVariant,
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -272,7 +269,9 @@ class _SkeletonListCard extends StatelessWidget {
                       width: 160,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
+                        ),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -281,7 +280,9 @@ class _SkeletonListCard extends StatelessWidget {
                       width: 220,
                       decoration: BoxDecoration(
                         color: Colors.white,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AppSpacing.radiusSm,
+                        ),
                       ),
                     ),
                   ],

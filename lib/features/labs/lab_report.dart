@@ -17,11 +17,15 @@ class LabAttachment {
 
   static List<LabAttachment> listFromRaw(dynamic raw) {
     if (raw is! List) return const [];
-    return raw.map((e) {
-      if (e is Map<String, dynamic>) return LabAttachment.fromMap(e);
-      if (e is Map) return LabAttachment.fromMap(Map<String, dynamic>.from(e));
-      return const LabAttachment(url: '', type: '');
-    }).where((e) => e.url.isNotEmpty).toList();
+    return raw
+        .map((e) {
+          if (e is Map<String, dynamic>) return LabAttachment.fromMap(e);
+          if (e is Map)
+            return LabAttachment.fromMap(Map<String, dynamic>.from(e));
+          return const LabAttachment(url: '', type: '');
+        })
+        .where((e) => e.url.isNotEmpty)
+        .toList();
   }
 }
 

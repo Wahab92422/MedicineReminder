@@ -193,9 +193,10 @@ class _ClinicalNotesScreenState extends ConsumerState<ClinicalNotesScreen> {
       toNotedDay: _toNotedFilter,
     );
     final hasFilters = _fromNotedFilter != null || _toNotedFilter != null;
-    final activeFilterCount = [_fromNotedFilter, _toNotedFilter]
-        .where((value) => value != null)
-        .length;
+    final activeFilterCount = [
+      _fromNotedFilter,
+      _toNotedFilter,
+    ].where((value) => value != null).length;
 
     final backgroundColor = Color.lerp(
       Theme.of(context).scaffoldBackgroundColor,
@@ -296,8 +297,7 @@ class _ClinicalNotesScreenState extends ConsumerState<ClinicalNotesScreen> {
                       label: Text(
                         'From ${MaterialLocalizations.of(context).formatMediumDate(_fromNotedFilter!)}',
                       ),
-                      onDeleted: () =>
-                          setState(() => _fromNotedFilter = null),
+                      onDeleted: () => setState(() => _fromNotedFilter = null),
                     ),
                   if (_toNotedFilter != null)
                     Chip(

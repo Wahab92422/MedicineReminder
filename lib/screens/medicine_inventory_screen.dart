@@ -67,9 +67,9 @@ class _MedicineInventoryScreenState
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to delete: $e')));
       }
     } finally {
       if (mounted) setState(() => _deletingEntryId = null);
@@ -132,7 +132,9 @@ class _MedicineInventoryScreenState
                   FilledButton(
                     onPressed: () {
                       ref
-                          .read(medicineInventoryCategoryFilterProvider.notifier)
+                          .read(
+                            medicineInventoryCategoryFilterProvider.notifier,
+                          )
                           .setFilter(category);
                       Navigator.pop(ctx);
                     },
@@ -141,7 +143,9 @@ class _MedicineInventoryScreenState
                   TextButton(
                     onPressed: () {
                       ref
-                          .read(medicineInventoryCategoryFilterProvider.notifier)
+                          .read(
+                            medicineInventoryCategoryFilterProvider.notifier,
+                          )
                           .setFilter(null);
                       Navigator.pop(ctx);
                     },
@@ -188,10 +192,10 @@ class _MedicineInventoryScreenState
                       child: TextField(
                         onChanged: (value) {
                           ref
-                              .read(medicineInventoryNameSearchProvider.notifier)
-                              .setQuery(
-                                value.trim().isEmpty ? null : value,
-                              );
+                              .read(
+                                medicineInventoryNameSearchProvider.notifier,
+                              )
+                              .setQuery(value.trim().isEmpty ? null : value);
                         },
                         decoration: InputDecoration(
                           hintText: 'Search medicines...',
@@ -243,7 +247,9 @@ class _MedicineInventoryScreenState
                 child: medicinesAsync.when(
                   loading: () => const InventoryListLoadingSkeleton(),
                   error: (e, _) => Padding(
-                    padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: AppSpacing.xl,
+                    ),
                     child: Text('Could not load medicines: $e'),
                   ),
                   data: (items) {
@@ -277,12 +283,12 @@ class _MedicineInventoryScreenState
                           onTap: () async {
                             final result = await Navigator.of(context)
                                 .push<bool>(
-                              MaterialPageRoute<bool>(
-                                builder: (_) => AddUpdateMedicineScreen(
-                                  existing: medicine,
-                                ),
-                              ),
-                            );
+                                  MaterialPageRoute<bool>(
+                                    builder: (_) => AddUpdateMedicineScreen(
+                                      existing: medicine,
+                                    ),
+                                  ),
+                                );
                             if (result == true && mounted) await _refresh();
                           },
                           onDelete: () => _confirmDelete(medicine),
@@ -363,10 +369,7 @@ class _MedicineInventoryScreenState
           },
           loading: () => const Padding(
             padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: SizedBox(
-              height: 88,
-              child: InlineFormSkeleton(lines: 2),
-            ),
+            child: SizedBox(height: 88, child: InlineFormSkeleton(lines: 2)),
           ),
           error: (e, st) => const SizedBox.shrink(),
         ),
@@ -423,10 +426,7 @@ class _MedicineInventoryScreenState
               AppSpacing.lg,
               0,
             ),
-            child: SizedBox(
-              height: 88,
-              child: InlineFormSkeleton(lines: 2),
-            ),
+            child: SizedBox(height: 88, child: InlineFormSkeleton(lines: 2)),
           ),
           error: (e, st) => const SizedBox.shrink(),
         ),

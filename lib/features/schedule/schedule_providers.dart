@@ -25,15 +25,12 @@ final _medicineLogRepositoryProvider = Provider<MedicineLogRepository>(
 
 final userScheduleReminderRepositoryProvider =
     Provider<UserScheduleReminderRepository>(
-  (_) => UserScheduleReminderRepository(),
-);
+      (_) => UserScheduleReminderRepository(),
+    );
 
 /// First day of month \[year-month-01\] as key; loads all agenda data for that month.
-final scheduleMonthDataProvider =
-    FutureProvider.autoDispose.family<List<UnifiedScheduleItem>, DateTime>((
-      ref,
-      monthFirst,
-    ) async {
+final scheduleMonthDataProvider = FutureProvider.autoDispose
+    .family<List<UnifiedScheduleItem>, DateTime>((ref, monthFirst) async {
       final uid = FirebaseAuth.instance.currentUser?.uid;
       if (uid == null) return [];
 

@@ -48,8 +48,8 @@ final medicineInventoryNameSearchProvider =
     );
 
 /// Full inventory snapshot (ordered by name) for low-stock / expiry banners and alerts sync.
-final allMedicinesStreamProvider =
-    StreamProvider.autoDispose.family<List<MedicineEntry>, String>((ref, userId) {
+final allMedicinesStreamProvider = StreamProvider.autoDispose
+    .family<List<MedicineEntry>, String>((ref, userId) {
       if (userId.isEmpty) {
         return Stream.value(const []);
       }
@@ -67,7 +67,9 @@ final medicinesInventoryStreamProvider =
       }
       final category = ref.watch(medicineInventoryCategoryFilterProvider);
       final nameSearch = ref.watch(medicineInventoryNameSearchProvider);
-      return ref.watch(medicineRepositoryProvider).watchMedicines(
+      return ref
+          .watch(medicineRepositoryProvider)
+          .watchMedicines(
             userId: uid,
             categoryFilter: category,
             nameSearch: nameSearch,
@@ -75,28 +77,26 @@ final medicinesInventoryStreamProvider =
     });
 
 /// Low-stock medicines derived from [allMedicinesStreamProvider] (live).
-final lowStockMedicinesProvider =
-    Provider.autoDispose.family<AsyncValue<List<MedicineEntry>>, String>(
-      (ref, userId) {
-        if (userId.isEmpty) {
-          return const AsyncValue.data([]);
-        }
-        return ref.watch(allMedicinesStreamProvider(userId)).whenData(
-              (list) => list.where((m) => m.isLowStock).toList(),
-            );
-      },
-    );
+final lowStockMedicinesProvider = Provider.autoDispose
+    .family<AsyncValue<List<MedicineEntry>>, String>((ref, userId) {
+      if (userId.isEmpty) {
+        return const AsyncValue.data([]);
+      }
+      return ref
+          .watch(allMedicinesStreamProvider(userId))
+          .whenData((list) => list.where((m) => m.isLowStock).toList());
+    });
 
 /// Expiring / expired medicines derived from [allMedicinesStreamProvider] (live).
-final expiringMedicinesProvider =
-    Provider.autoDispose.family<AsyncValue<List<MedicineEntry>>, String>(
-      (ref, userId) {
-        if (userId.isEmpty) {
-          return const AsyncValue.data([]);
-        }
-        return ref.watch(allMedicinesStreamProvider(userId)).whenData(
-              (list) =>
-                  list.where((m) => m.isExpiringSoon || m.isExpired).toList(),
-            );
-      },
-    );
+final expiringMedicinesProvider = Provider.autoDispose
+    .family<AsyncValue<List<MedicineEntry>>, String>((ref, userId) {
+      if (userId.isEmpty) {
+        return const AsyncValue.data([]);
+      }
+      return ref
+          .watch(allMedicinesStreamProvider(userId))
+          .whenData(
+            (list) =>
+                list.where((m) => m.isExpiringSoon || m.isExpired).toList(),
+          );
+    });

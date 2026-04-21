@@ -15,8 +15,7 @@ class AppointmentsScreen extends ConsumerStatefulWidget {
   const AppointmentsScreen({super.key});
 
   @override
-  ConsumerState<AppointmentsScreen> createState() =>
-      _AppointmentsScreenState();
+  ConsumerState<AppointmentsScreen> createState() => _AppointmentsScreenState();
 }
 
 class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen> {
@@ -100,15 +99,15 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen> {
                   Text(
                     'Filter appointments',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     'Narrow the list by status.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).colorScheme.onSurfaceVariant,
-                        ),
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                   const SizedBox(height: AppSpacing.md),
                   DropdownButtonFormField<String?>(
@@ -173,9 +172,9 @@ class _AppointmentsScreenState extends ConsumerState<AppointmentsScreen> {
         final message = next.error!;
         WidgetsBinding.instance.addPostFrameCallback((_) {
           if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(message)),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(message)));
         });
       }
     });
@@ -380,18 +379,18 @@ class _AppointmentsOverviewCard extends StatelessWidget {
         children: [
           Text(
             'Visits and reminders',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w700,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
             entryCount == 0
                 ? 'Add an appointment to track history. Scheduled future visits can notify you locally at the scheduled time—not a booking with a clinic.'
                 : '$entryCount appointment${entryCount == 1 ? '' : 's'} saved. Tap a card to edit.',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: scheme.onSurfaceVariant,
-                ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
           ),
         ],
       ),

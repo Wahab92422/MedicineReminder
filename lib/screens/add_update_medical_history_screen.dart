@@ -12,6 +12,7 @@ import '../widgets/custom_dropdown.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/speech_text_field.dart';
 
 class AddUpdateMedicalHistoryScreen extends ConsumerStatefulWidget {
   const AddUpdateMedicalHistoryScreen({super.key, this.existing});
@@ -26,7 +27,6 @@ class AddUpdateMedicalHistoryScreen extends ConsumerStatefulWidget {
 class _AddUpdateMedicalHistoryScreenState
     extends ConsumerState<AddUpdateMedicalHistoryScreen> {
   final _titleController = TextEditingController();
-  final _detailsController = TextEditingController();
   final _notesController = TextEditingController();
 
   String? _category;
@@ -34,6 +34,14 @@ class _AddUpdateMedicalHistoryScreenState
   bool _saving = false;
 
   bool get _isEdit => widget.existing != null;
+
+  static String _mergedNotes(String details, String notes) {
+    final d = details.trim();
+    final n = notes.trim();
+    if (d.isEmpty) return n;
+    if (n.isEmpty) return d;
+    return '$d\n\n$n';
+  }
 
   @override
   void initState() {
@@ -43,8 +51,7 @@ class _AddUpdateMedicalHistoryScreenState
       _category = existing.category;
       _recordedAt = existing.recordedAt;
       _titleController.text = existing.title;
-      _detailsController.text = existing.details;
-      _notesController.text = existing.notes;
+      _notesController.text = _mergedNotes(existing.details, existing.notes);
     } else {
       _category = MedicalHistoryCategories.diagnosis;
       _recordedAt = DateTime.now();
@@ -54,7 +61,6 @@ class _AddUpdateMedicalHistoryScreenState
   @override
   void dispose() {
     _titleController.dispose();
-    _detailsController.dispose();
     _notesController.dispose();
     super.dispose();
   }
@@ -93,7 +99,7 @@ class _AddUpdateMedicalHistoryScreenState
         recordedAt: _recordedAt!,
         category: _category!,
         title: _titleController.text.trim(),
-        details: _detailsController.text.trim(),
+        details: '',
         notes: _notesController.text.trim(),
         createdAt: widget.existing?.createdAt ?? now,
         updatedAt: now,
@@ -186,18 +192,12 @@ class _AddUpdateMedicalHistoryScreenState
             textInputAction: TextInputAction.next,
           ),
           const SizedBox(height: AppSpacing.md),
-          CustomTextField(
-            controller: _detailsController,
-            label: 'Details',
-            hint: 'Doctor, medications, diagnosis date, or treatment notes.',
-            maxLines: 4,
-          ),
-          const SizedBox(height: AppSpacing.md),
-          CustomTextField(
+          SpeechTextField(
             controller: _notesController,
             label: 'Notes',
-            hint: 'Optional',
-            maxLines: 3,
+            hint:
+                'Doctor, medications, diagnosis date, treatment, or anything else.',
+            maxLines: 6,
           ),
           const SizedBox(height: AppSpacing.xl),
           PrimaryButton(

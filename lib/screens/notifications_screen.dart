@@ -54,7 +54,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
   }
 
   Future<void> _markAsRead(String notificationId) async {
-    await ref.read(notificationInboxProvider.notifier).markAsRead(notificationId);
+    await ref
+        .read(notificationInboxProvider.notifier)
+        .markAsRead(notificationId);
   }
 
   Future<void> _markAllAsRead() async {
@@ -103,9 +105,7 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           subtitle: 'Medicine alerts and reminders',
           icon: Icons.notifications_rounded,
         ),
-        body: const Center(
-          child: Text('Sign in to view alerts.'),
-        ),
+        body: const Center(child: Text('Sign in to view alerts.')),
       );
     }
     final notificationsAsync = ref.watch(userNotificationsStreamProvider(uid));
@@ -208,8 +208,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
               Text(
                 error.toString(),
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.error,
-                    ),
+                  color: Theme.of(context).colorScheme.error,
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               FilledButton(
@@ -240,10 +240,8 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                           ? 'All caught up!'
                           : '$unreadCount unread alert${unreadCount == 1 ? '' : 's'}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant,
-                          ),
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ],
@@ -348,10 +346,10 @@ class NotificationCard extends StatelessWidget {
                     Text(
                       notification.message,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: notification.isRead
-                                ? colorScheme.onSurfaceVariant
-                                : colorScheme.onSurface,
-                          ),
+                        color: notification.isRead
+                            ? colorScheme.onSurfaceVariant
+                            : colorScheme.onSurface,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     Row(
@@ -360,9 +358,8 @@ class NotificationCard extends StatelessWidget {
                           AppDateTimeFormat.formatShortRelativeWithTime(
                             notification.createdAt,
                           ),
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                color: colorScheme.onSurfaceVariant,
-                              ),
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: colorScheme.onSurfaceVariant),
                         ),
                         const SizedBox(width: AppSpacing.md),
                         Container(

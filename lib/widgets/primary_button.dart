@@ -28,20 +28,17 @@ class PrimaryButton extends StatelessWidget {
             ),
           )
         : icon == null
-            ? Text(label)
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, size: 20),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text(label),
-                ],
-              );
+        ? Text(label)
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, size: 20),
+              const SizedBox(width: AppSpacing.sm),
+              Text(label),
+            ],
+          );
 
-    return FilledButton(
-      onPressed: isLoading ? null : onPressed,
-      child: child,
-    );
+    return FilledButton(onPressed: isLoading ? null : onPressed, child: child);
   }
 }

@@ -13,6 +13,7 @@ import '../widgets/custom_dropdown.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/speech_text_field.dart';
 import '../widgets/skeleton_placeholders.dart';
 
 class AddUpdateMedicineLogScreen extends ConsumerStatefulWidget {
@@ -94,15 +95,15 @@ class _AddUpdateMedicineLogScreenState
       return;
     }
     if (_status == null || _status!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select a status.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Select a status.')));
       return;
     }
     if (_loggedAt == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select date and time.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Select date and time.')));
       return;
     }
 
@@ -236,13 +237,14 @@ class _AddUpdateMedicineLogScreenState
                       return Text(
                         'Add medicines in Inventory before logging doses.',
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.error,
-                            ),
+                          color: Theme.of(context).colorScheme.error,
+                        ),
                       );
                     }
                     return CustomDropdown<String>(
                       label: 'Medicine (from inventory)',
-                      value: _medicineId != null &&
+                      value:
+                          _medicineId != null &&
                               items.any((e) => e.id == _medicineId)
                           ? _medicineId
                           : null,
@@ -285,8 +287,8 @@ class _AddUpdateMedicineLogScreenState
               Text(
                 'When status is Taken, this many units are subtracted from inventory.',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
               DatePickerField(
@@ -296,7 +298,7 @@ class _AddUpdateMedicineLogScreenState
                 onDateSelected: (d) => setState(() => _loggedAt = d),
               ),
               const SizedBox(height: AppSpacing.md),
-              CustomTextField(
+              SpeechTextField(
                 controller: _notesController,
                 label: 'Notes (optional)',
                 maxLines: 3,

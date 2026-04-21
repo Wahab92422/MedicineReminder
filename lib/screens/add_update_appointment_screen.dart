@@ -11,6 +11,7 @@ import '../widgets/custom_dropdown.dart';
 import '../widgets/custom_text_field.dart';
 import '../widgets/date_picker_field.dart';
 import '../widgets/primary_button.dart';
+import '../widgets/speech_text_field.dart';
 
 class AddUpdateAppointmentScreen extends ConsumerStatefulWidget {
   const AddUpdateAppointmentScreen({
@@ -64,7 +65,8 @@ class _AddUpdateAppointmentScreenState
       _status = e.status;
     } else {
       _scheduledAt =
-          widget.initialScheduledAt ?? DateTime.now().add(const Duration(hours: 1));
+          widget.initialScheduledAt ??
+          DateTime.now().add(const Duration(hours: 1));
       _status = AppointmentStatuses.scheduled;
       if (widget.initialTitle != null && widget.initialTitle!.isNotEmpty) {
         _titleController.text = widget.initialTitle!;
@@ -97,16 +99,16 @@ class _AddUpdateAppointmentScreenState
     }
 
     if (_scheduledAt == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select date and time.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Select date and time.')));
       return;
     }
 
     if (_status == null || _status!.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Select a status.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Select a status.')));
       return;
     }
 
@@ -158,11 +160,9 @@ class _AddUpdateAppointmentScreenState
           content: Text(
             result.isQueuedForSync
                 ? (_isEdit
-                    ? 'Updated locally. Sync will complete when connection recovers.'
-                    : 'Saved locally. Sync will complete when connection recovers.')
-                : (_isEdit
-                    ? 'Appointment updated.'
-                    : 'Appointment saved.'),
+                      ? 'Updated locally. Sync will complete when connection recovers.'
+                      : 'Saved locally. Sync will complete when connection recovers.')
+                : (_isEdit ? 'Appointment updated.' : 'Appointment saved.'),
           ),
         ),
       );
@@ -185,67 +185,67 @@ class _AddUpdateAppointmentScreenState
         subtitle: _isEdit
             ? 'Update visit details or status. Scheduled future visits can remind you at the scheduled time.'
             : 'Log a past or upcoming visit for your records—not booking with a provider. Scheduled visits can get a local reminder.',
-        icon: _isEdit ? Icons.edit_note_outlined : Icons.event_available_rounded,
+        icon: _isEdit
+            ? Icons.edit_note_outlined
+            : Icons.event_available_rounded,
       ),
       body: ListView(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            children: [
-              CustomTextField(
-                controller: _titleController,
-                label: 'Title',
-                hint: 'e.g. Cardiology follow-up, Annual checkup',
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              DatePickerField(
-                label: 'Date and time',
-                value: _scheduledAt,
-                includeTime: true,
-                onDateSelected: (d) => setState(() => _scheduledAt = d),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              CustomTextField(
-                controller: _doctorController,
-                label: 'Doctor (optional)',
-                hint: 'e.g. Dr. Smith',
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              CustomDropdown<String>(
-                label: 'Status',
-                value: _status,
-                items: AppointmentStatuses.all
-                    .map(
-                      (s) => DropdownMenuItem(value: s, child: Text(s)),
-                    )
-                    .toList(),
-                enabled: !(widget.lockStatusToScheduled && !_isEdit),
-                onChanged: (v) => setState(() => _status = v),
-              ),
-              const SizedBox(height: AppSpacing.md),
-              CustomTextField(
-                controller: _locationController,
-                label: 'Location (optional)',
-                hint: 'e.g. City Clinic, Video call',
-                textInputAction: TextInputAction.next,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              CustomTextField(
-                controller: _notesController,
-                label: 'Notes',
-                hint: 'Any details you want to remember',
-                maxLines: 3,
-                textInputAction: TextInputAction.newline,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              PrimaryButton(
-                label: _isEdit ? 'Update appointment' : 'Save appointment',
-                icon: Icons.check_rounded,
-                isLoading: _saving,
-                onPressed: _saving ? null : _save,
-              ),
-            ],
+        padding: const EdgeInsets.all(AppSpacing.md),
+        children: [
+          CustomTextField(
+            controller: _titleController,
+            label: 'Title',
+            hint: 'e.g. Cardiology follow-up, Annual checkup',
+            textInputAction: TextInputAction.next,
           ),
+          const SizedBox(height: AppSpacing.md),
+          DatePickerField(
+            label: 'Date and time',
+            value: _scheduledAt,
+            includeTime: true,
+            onDateSelected: (d) => setState(() => _scheduledAt = d),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CustomTextField(
+            controller: _doctorController,
+            label: 'Doctor (optional)',
+            hint: 'e.g. Dr. Smith',
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CustomDropdown<String>(
+            label: 'Status',
+            value: _status,
+            items: AppointmentStatuses.all
+                .map((s) => DropdownMenuItem(value: s, child: Text(s)))
+                .toList(),
+            enabled: !(widget.lockStatusToScheduled && !_isEdit),
+            onChanged: (v) => setState(() => _status = v),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          CustomTextField(
+            controller: _locationController,
+            label: 'Location (optional)',
+            hint: 'e.g. City Clinic, Video call',
+            textInputAction: TextInputAction.next,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SpeechTextField(
+            controller: _notesController,
+            label: 'Notes',
+            hint: 'Any details you want to remember',
+            maxLines: 3,
+            textInputAction: TextInputAction.newline,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          PrimaryButton(
+            label: _isEdit ? 'Update appointment' : 'Save appointment',
+            icon: Icons.check_rounded,
+            isLoading: _saving,
+            onPressed: _saving ? null : _save,
+          ),
+        ],
+      ),
     );
   }
 }

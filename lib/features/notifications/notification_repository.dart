@@ -33,7 +33,10 @@ class NotificationRepository {
         .get()
         .timeout(_readTimeout);
 
-    return snap.docs.map(_parseNotificationDoc).whereType<AppNotification>().toList();
+    return snap.docs
+        .map(_parseNotificationDoc)
+        .whereType<AppNotification>()
+        .toList();
   }
 
   /// Live updates when documents are added, updated, or removed.
@@ -46,8 +49,10 @@ class NotificationRepository {
         .limit(limit)
         .snapshots()
         .map(
-          (snapshot) =>
-              snapshot.docs.map(_parseNotificationDoc).whereType<AppNotification>().toList(),
+          (snapshot) => snapshot.docs
+              .map(_parseNotificationDoc)
+              .whereType<AppNotification>()
+              .toList(),
         );
   }
 
@@ -64,12 +69,14 @@ class NotificationRepository {
     required String userId,
   }) async {
     // Equality-only filter (no orderBy) so no composite index is required.
-    final snap = await _notifications(userId)
-        .where('isRead', isEqualTo: false)
-        .get()
-        .timeout(_readTimeout);
+    final snap = await _notifications(
+      userId,
+    ).where('isRead', isEqualTo: false).get().timeout(_readTimeout);
 
-    return snap.docs.map(_parseNotificationDoc).whereType<AppNotification>().toList();
+    return snap.docs
+        .map(_parseNotificationDoc)
+        .whereType<AppNotification>()
+        .toList();
   }
 
   Future<AppNotification> createNotification({
@@ -91,10 +98,9 @@ class NotificationRepository {
   }
 
   Future<void> markAllAsRead({required String userId}) async {
-    final snap = await _notifications(userId)
-        .where('isRead', isEqualTo: false)
-        .get()
-        .timeout(_readTimeout);
+    final snap = await _notifications(
+      userId,
+    ).where('isRead', isEqualTo: false).get().timeout(_readTimeout);
 
     if (snap.docs.isEmpty) {
       return;
