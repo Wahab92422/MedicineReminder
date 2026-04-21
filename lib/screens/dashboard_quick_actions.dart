@@ -9,6 +9,7 @@ import 'medical_history_screen.dart';
 import 'medicine_inventory_screen.dart';
 import 'medicine_logs_screen.dart';
 import 'notifications_screen.dart';
+import 'prescriptions_screen.dart';
 import 'schedule_screen.dart';
 import 'social_history_screen.dart';
 import 'surgical_history_screen.dart';
@@ -122,6 +123,15 @@ final List<DashboardQuickActionSpec> dashboardDrawerQuickActions = [
     navigate: (c) {
       Navigator.of(c).push<void>(
         MaterialPageRoute<void>(builder: (_) => const MedicalHistoryScreen()),
+      );
+    },
+  ),
+  DashboardQuickActionSpec(
+    icon: Icons.medication_outlined,
+    label: 'Prescriptions',
+    navigate: (c) {
+      Navigator.of(c).push<void>(
+        MaterialPageRoute<void>(builder: (_) => const PrescriptionsScreen()),
       );
     },
   ),
